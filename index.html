@@ -3,37 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>人才招聘 · 我们在找你</title>
+<title>万物心选&敲开心招聘</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   :root {
-    --bg: #fafafa;
+    --bg: #f8fafc;
     --card: #ffffff;
-    --text: #1a1a1a;
-    --muted: #6b6b6b;
-    --accent: #2563eb;
-    --accent-dark: #1d4ed8;
-    --accent-bg: #eff6ff;
-    --border: #e5e5e5;
-    --tag-bg: #f3f4f6;
-    --danger: #dc2626;
-    --success: #16a34a;
-    --radius: 12px;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #7c3aed;
+    --accent-dark: #6d28d9;
+    --accent-bg: #f5f3ff;
+    --accent-gradient: linear-gradient(135deg, #818cf8 0%, #8b5cf6 50%, #a855f7 100%);
+    --border: #e2e8f0;
+    --tag-bg: #f1f5f9;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --radius: 16px;
+    --shadow-sm: 0 1px 3px rgba(15,23,42,0.04), 0 1px 2px rgba(15,23,42,0.06);
+    --shadow: 0 4px 12px rgba(15,23,42,0.06), 0 2px 4px rgba(15,23,42,0.04);
+    --shadow-lg: 0 20px 48px rgba(15,23,42,0.1), 0 8px 16px rgba(15,23,42,0.04);
   }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    background: var(--bg);
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    background-attachment: fixed;
     color: var(--text);
     line-height: 1.6;
+    min-height: 100vh;
   }
 
+  /* ============ 顶栏 ============ */
   .top-bar {
     position: sticky; top: 0; z-index: 50;
-    background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    padding: 12px 24px;
-    display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
+    padding: 10px 24px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
   }
+  .top-bar-left { display: flex; align-items: center; gap: 10px; }
+  .brand-logo {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, #818cf8 0%, #a78bfa 45%, #c084fc 100%);
+    color: #fff; font-weight: 800; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; user-select: none;
+    box-shadow: 0 2px 10px rgba(139,92,246,0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .brand-logo::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 50%);
+    pointer-events: none;
+  }
+  .brand-logo:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(139,92,246,0.4); }
+  .brand-name { font-weight: 700; font-size: 1rem; color: var(--text); }
+  .tb-right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .tb-btn {
     padding: 7px 16px; border: 1px solid var(--border); background: var(--card);
     border-radius: 8px; font-size: 0.85rem; cursor: pointer; color: var(--text); transition: all 0.2s;
@@ -42,6 +70,8 @@
   .tb-btn:hover { border-color: var(--accent); color: var(--accent); }
   .tb-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .tb-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+  .tb-btn.admin-btn { background: var(--accent-gradient); color: #fff; border: none; }
+  .tb-btn.admin-btn:hover { opacity: 0.9; color: #fff; }
 
   .tb-dropdown { position: relative; display: inline-block; }
   .tb-menu {
@@ -59,68 +89,153 @@
   .tb-menu button:hover { background: var(--accent-bg); color: var(--accent); }
   .tb-menu .sep { height: 1px; background: var(--border); margin: 6px 4px; }
 
-  .hero { text-align: center; padding: 60px 24px 40px; background: linear-gradient(180deg, #fff 0%, var(--bg) 100%); }
-  .hero h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 12px; }
-  .hero p { color: var(--muted); font-size: 1.05rem; max-width: 540px; margin: 0 auto; }
+  /* ============ Hero ============ */
+  .hero {
+    text-align: center; padding: 60px 24px 36px;
+    background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -40%; left: -8%;
+    width: 520px; height: 520px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -35%; right: -8%;
+    width: 440px; height: 440px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero .hero-sub {
+    font-size: clamp(1.7rem, 4.8vw, 2.8rem); font-weight: 800;
+    letter-spacing: -0.5px; margin-bottom: 10px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    position: relative; z-index: 1;
+  }
+  .hero h1 {
+    font-size: clamp(1.15rem, 2.4vw, 1.4rem); font-weight: 500;
+    color: var(--muted); letter-spacing: 0; margin-bottom: 0;
+    position: relative; z-index: 1;
+  }
+  .hero p { color: var(--muted); font-size: 1rem; max-width: 540px; margin: 0 auto; position: relative; z-index: 1; }
 
+  /* ============ 关于我们 ============ */
+  .about-section {
+    max-width: 920px; margin: 0 auto; padding: 20px 20px 12px;
+  }
+  .about-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 28px; position: relative;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.3s;
+  }
+  .about-card:hover { box-shadow: var(--shadow); }
+  .about-card h2 { font-size: 1.1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .about-card h2::before {
+    content: ''; width: 3px; height: 18px; border-radius: 2px;
+    background: var(--accent-gradient);
+  }
+  .about-text { color: var(--muted); line-height: 1.75; font-size: 0.88rem; white-space: pre-wrap; }
+
+  .about-stats {
+    display: flex; gap: 14px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .stat-item {
+    flex: none; min-width: 80px;
+    background: var(--accent-bg); border-radius: 8px; padding: 8px 18px;
+    text-align: center;
+  }
+  .stat-num { font-size: 1.3rem; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  /* ============ 筛选 ============ */
   .filter-bar {
     max-width: 880px; margin: 0 auto 32px; padding: 0 24px;
-    display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: center;
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: center;
   }
   .filter-bar button {
     padding: 8px 18px; border: 1px solid var(--border); background: var(--card);
-    border-radius: 999px; font-size: 0.9rem; cursor: pointer; color: var(--text); transition: all 0.2s;
+    border-radius: 999px; font-size: 0.88rem; cursor: pointer; color: var(--text); transition: all 0.2s;
+    font-family: inherit;
   }
-  .filter-bar button:hover { border-color: var(--accent); }
-  .filter-bar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .filter-bar button:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-bar button.active { background: var(--accent-gradient); color: #fff; border-color: transparent; }
+  .city-filter {
+    padding: 8px 34px 8px 16px; border: 1px solid var(--border); background: var(--card);
+    border-radius: 999px; font-size: 0.88rem; color: var(--text); cursor: pointer;
+    font-family: inherit; appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center;
+    transition: all 0.2s;
+  }
+  .city-filter:hover { border-color: var(--accent); color: var(--accent); }
+  .city-filter:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,92,246,0.12); }
 
+  /* ============ 岗位卡片 ============ */
   .jobs { max-width: 880px; margin: 0 auto 60px; padding: 0 24px; display: flex; flex-direction: column; gap: 16px; }
   .job-card {
     background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 28px; cursor: pointer; transition: all 0.25s ease; position: relative;
+    padding: 28px; cursor: pointer; transition: all 0.3s cubic-bezier(.4,0,.2,1); position: relative;
   }
-  .job-card:hover { border-color: var(--accent); box-shadow: 0 4px 24px rgba(37,99,235,0.08); transform: translateY(-2px); }
+  .job-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 8px 30px rgba(139,92,246,0.1);
+    transform: translateY(-3px);
+  }
   .job-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
-  .job-title { font-size: 1.25rem; font-weight: 600; }
-  .job-salary { color: var(--accent); font-weight: 600; font-size: 1rem; white-space: nowrap; }
-  .job-meta { display: flex; gap: 18px; color: var(--muted); font-size: 0.9rem; margin-bottom: 14px; flex-wrap: wrap; }
+  .job-title { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+  .job-salary { color: var(--accent); font-weight: 700; font-size: 1rem; white-space: nowrap; }
+  .job-meta { display: flex; gap: 18px; color: var(--muted); font-size: 0.88rem; margin-bottom: 14px; flex-wrap: wrap; }
   .job-meta span::before { content: "·"; margin-right: 4px; }
   .job-meta span:first-child::before { content: ""; margin: 0; }
+  .job-meta .loc-icon::before { content: "📍"; margin-right: 2px; }
   .job-tags { display: flex; gap: 8px; flex-wrap: wrap; }
-  .tag { background: var(--tag-bg); color: var(--muted); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; }
+  .tag { background: var(--tag-bg); color: var(--muted); padding: 4px 12px; border-radius: 6px; font-size: 0.78rem; }
 
   .edit-bar { position: absolute; top: 12px; right: 12px; display: none; gap: 6px; z-index: 2; }
-  body.edit-mode .edit-bar { display: flex; }
+  body.admin .edit-bar { display: flex; }
   .edit-bar button {
     padding: 5px 12px; font-size: 0.8rem; border: 1px solid var(--border); background: #fff;
     border-radius: 6px; cursor: pointer; color: var(--muted); transition: all 0.2s;
   }
   .edit-bar .btn-edit:hover { border-color: var(--accent); color: var(--accent); }
   .edit-bar .btn-del:hover { border-color: var(--danger); color: var(--danger); }
-  body.edit-mode .job-card { cursor: default; }
-  body.edit-mode .job-card:hover { transform: none; box-shadow: none; }
 
   .add-card { max-width: 880px; margin: 0 auto 60px; padding: 0 24px; display: none; }
-  body.edit-mode .add-card { display: block; }
+  body.admin .add-card { display: block; }
   .add-card button {
     width: 100%; padding: 20px; border: 2px dashed var(--border); background: transparent;
     border-radius: var(--radius); color: var(--muted); font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+    font-family: inherit;
   }
   .add-card button:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
 
+  .empty { text-align: center; padding: 60px; color: var(--muted); }
+
+  /* ============ Overlay ============ */
   .overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100;
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100;
     padding: 24px; justify-content: center; align-items: flex-start; overflow-y: auto;
+    backdrop-filter: blur(2px);
   }
-  .overlay.show { display: flex; }
+  .overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   .panel {
     background: var(--card); border-radius: var(--radius); max-width: 680px; width: 100%;
-    padding: 40px; margin: 40px auto; position: relative; animation: slideUp 0.25s ease;
+    padding: 40px; margin: 60px auto; position: relative; animation: slideUp 0.3s cubic-bezier(.4,0,.2,1);
+    box-shadow: var(--shadow-lg);
   }
   .panel-wide { max-width: 760px; }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-  .close-btn { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); }
-  .close-btn:hover { color: var(--text); }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .close-btn {
+    position: absolute; top: 16px; right: 20px; background: none; border: none;
+    font-size: 1.5rem; cursor: pointer; color: var(--muted); width: 36px; height: 36px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .close-btn:hover { background: var(--tag-bg); color: var(--text); }
 
   .panel h2 { font-size: 1.4rem; margin-bottom: 4px; }
   .panel .sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
@@ -128,17 +243,21 @@
   .detail-panel h2 { margin-bottom: 8px; }
   .detail-panel .job-salary { display: inline-block; margin-bottom: 20px; }
   .detail-panel section { margin-bottom: 24px; }
-  .detail-panel h3 { font-size: 0.95rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; font-weight: 600; }
-  .detail-panel ul { padding-left: 20px; color: var(--text); }
-  .detail-panel li { margin-bottom: 6px; }
-  .apply-btn {
-    display: block; width: 100%; padding: 14px; background: var(--accent); color: #fff;
-    border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;
-    margin-top: 16px; transition: opacity 0.2s;
+  .detail-panel h3 {
+    font-size: 0.9rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px;
   }
-  .apply-btn:hover { opacity: 0.9; }
-  .empty { text-align: center; padding: 60px; color: var(--muted); }
+  .detail-panel h3::before { content: ''; width: 3px; height: 14px; border-radius: 2px; background: var(--accent); }
+  .detail-panel ul { padding-left: 20px; color: var(--text); }
+  .detail-panel li { margin-bottom: 6px; font-size: 0.92rem; }
+  .apply-btn {
+    display: block; width: 100%; padding: 14px; background: var(--accent-gradient); color: #fff;
+    border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer;
+    margin-top: 16px; transition: transform 0.2s, box-shadow 0.2s; font-family: inherit;
+  }
+  .apply-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(79,70,229,0.3); }
 
+  /* ============ 表单 ============ */
   .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 22px; }
   .tabs button {
     padding: 10px 20px; border: none; background: transparent; cursor: pointer;
@@ -150,25 +269,64 @@
   .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
   .form-group input, .form-group select, .form-group textarea {
     width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
-    font-size: 0.95rem; font-family: inherit; background: #fff; transition: border-color 0.2s;
+    font-size: 0.95rem; font-family: inherit; background: #fff; transition: border-color 0.2s, box-shadow 0.2s;
   }
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
   }
   .form-group textarea { resize: vertical; min-height: 80px; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
   .btn-save, .btn-cancel {
-    padding: 10px 22px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none;
+    padding: 10px 22px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; font-family: inherit;
   }
-  .btn-save { background: var(--accent); color: #fff; }
-  .btn-save:hover { background: var(--accent-dark); }
+  .btn-save { background: var(--accent-gradient); color: #fff; transition: transform 0.2s, box-shadow 0.2s; }
+  .btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
   .btn-cancel { background: var(--tag-bg); color: var(--text); }
   .btn-cancel:hover { background: var(--border); }
   .form-hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
 
+  .admin-group { margin-bottom: 18px; }
+  .admin-group > label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+  .tag-box {
+    display: flex; flex-wrap: wrap; gap: 8px; padding: 10px;
+    background: #f9fafb; border: 1px dashed var(--border); border-radius: 8px;
+    min-height: 44px;
+  }
+  .tag-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px 5px 12px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 999px;
+    font-size: 0.8rem; color: var(--text);
+    transition: all 0.2s;
+  }
+  .tag-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .tag-chip .chip-del {
+    width: 16px; height: 16px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent; color: var(--muted);
+    font-size: 0.75rem; line-height: 1; cursor: pointer;
+    padding: 0; margin-left: 2px;
+    transition: all 0.2s;
+  }
+  .tag-chip .chip-del:hover { background: var(--danger); color: #fff; }
+  .tag-add-row { display: flex; gap: 8px; margin-top: 8px; }
+  .tag-add-row input {
+    flex: 1; padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 0.88rem; font-family: inherit;
+    transition: all 0.2s;
+  }
+  .tag-add-row input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,92,246,0.12); }
+  .tag-add-row button {
+    padding: 8px 16px; background: var(--accent-gradient); color: #fff;
+    border: none; border-radius: 6px; font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: opacity 0.2s;
+  }
+  .tag-add-row button:hover { opacity: 0.9; }
+
+  /* ============ 粘贴导入 ============ */
   .paste-area {
-    width: 100%; min-height: 240px; padding: 14px;
+    width: 100%; min-height: 260px; padding: 14px;
     border: 1px solid var(--border); border-radius: 8px; font-family: "Consolas", "Courier New", monospace;
     font-size: 0.85rem; background: #fafafa; resize: vertical; line-height: 1.7;
   }
@@ -180,19 +338,16 @@
   }
   .drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: var(--accent-bg); }
   .drop-zone .icon { font-size: 2.5rem; margin-bottom: 10px; }
-  .drop-zone .tip { color: var(--muted); font-size: 0.88rem; }
   .drop-zone .file-hint { margin-top: 10px; font-size: 0.82rem; color: var(--muted); }
 
   .field-map { background: #fafafa; border-radius: 8px; padding: 16px; margin-bottom: 18px; }
   .field-map-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 10px; color: var(--text); }
   .field-map-row { display: grid; grid-template-columns: 140px 16px 1fr; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.85rem; }
-  .field-map-row .arrow { color: var(--muted); text-align: center; }
   .field-map-row select { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; font-family: inherit; background: #fff; }
 
   .preview-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.82rem; }
   .preview-table th, .preview-table td { padding: 6px 10px; border: 1px solid var(--border); text-align: left; }
   .preview-table th { background: var(--tag-bg); font-weight: 600; }
-  .preview-trunc { text-align: center; color: var(--muted); padding: 8px; font-size: 0.82rem; }
 
   .import-result { padding: 14px; border-radius: 8px; margin-top: 14px; font-size: 0.9rem; display: none; }
   .import-result.show { display: block; }
@@ -205,76 +360,131 @@
   .template-box .icon { font-size: 2rem; margin-bottom: 8px; }
   .template-box p { color: var(--muted); font-size: 0.88rem; margin-bottom: 14px; }
   .template-box .btn {
-    display: inline-block; padding: 10px 24px; background: var(--accent); color: #fff; border: none;
+    display: inline-block; padding: 10px 24px; background: var(--accent-gradient); color: #fff; border: none;
     border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit;
   }
-  .template-box .btn:hover { background: var(--accent-dark); }
+  .template-box .btn:hover { opacity: 0.9; }
 
+  /* ============ 投递弹窗 ============ */
+  .apply-form-group { margin-bottom: 16px; }
+  .apply-form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  .apply-form-group input, .apply-form-group textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.95rem; font-family: inherit; background: #fff; transition: border-color 0.2s;
+  }
+  .apply-form-group input:focus, .apply-form-group textarea:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+  }
+
+  /* ============ Toast ============ */
   .toast {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
-    background: var(--text); color: #fff; padding: 12px 24px; border-radius: 8px;
+    background: var(--text); color: #fff; padding: 12px 24px; border-radius: 10px;
     font-size: 0.9rem; z-index: 9999; opacity: 0; transition: all 0.3s ease; pointer-events: none;
+    box-shadow: var(--shadow-lg);
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.success { background: var(--success); }
   .toast.error { background: var(--danger); }
 
+  /* ============ 页脚 ============ */
+  .site-footer {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: rgba(255,255,255,0.7);
+    padding: 36px 24px 24px; text-align: center; margin-top: 48px;
+  }
+  .site-footer .footer-brand {
+    font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px;
+  }
+  .site-footer .footer-email {
+    font-size: 0.9rem; margin-bottom: 16px;
+  }
+  .site-footer .footer-email a {
+    color: #c4b5fd; text-decoration: none; transition: color 0.2s;
+  }
+  .site-footer .footer-email a:hover { color: #fbcfe8; }
+  .site-footer .footer-copyright {
+    font-size: 0.8rem; opacity: 0.6;
+  }
+  .site-footer .edit-footer { display: none; margin-top: 12px; gap: 6px; justify-content: center; }
+  body.admin .edit-footer { display: flex; }
+  .site-footer .edit-footer button {
+    padding: 4px 12px; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.3); background: transparent;
+    border-radius: 6px; cursor: pointer; color: rgba(255,255,255,0.8); transition: all 0.2s;
+    font-family: inherit;
+  }
+  .site-footer .edit-footer button:hover { border-color: #fff; color: #fff; }
+
+  /* ============ 动画 ============ */
+  .fade-in-up { animation: fadeInUp 0.5s ease both; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ============ 响应式 ============ */
   @media (max-width: 600px) {
-    .hero { padding: 40px 20px 30px; }
-    .hero h1 { font-size: 1.8rem; }
+    .hero { padding: 50px 20px 30px; }
+    .about-section { padding: 30px 20px 10px; }
+    .about-card { padding: 24px; }
     .job-card { padding: 20px; }
     .panel { padding: 28px 22px; margin: 20px auto; }
     .form-row { grid-template-columns: 1fr; }
     .field-map-row { grid-template-columns: 1fr; }
     .field-map-row .arrow { display: none; }
+    .about-stats { gap: 12px; }
+    .stat-item { min-width: 100px; padding: 12px 14px; }
+    .stat-num { font-size: 1.4rem; }
+    .brand-name { display: none; }
   }
 </style>
 </head>
+
 <body>
 
 <div class="top-bar">
-  <button class="tb-btn" id="btnEdit">✏️ 编辑模式</button>
-
-  <div class="tb-dropdown" id="ddImport">
-    <button class="tb-btn" onclick="toggleDD('ddImport')">📥 导入 ▾</button>
-    <div class="tb-menu">
-      <button onclick="closeAllDD();openImportDialog('paste')">📋 从 Word/Excel 粘贴</button>
-      <button onclick="closeAllDD();openImportDialog('file')">📂 上传 CSV / JSON 文件</button>
-      <div class="sep"></div>
-      <button onclick="closeAllDD();openTemplateDialog()">📄 下载 Excel 模板</button>
-    </div>
+  <div class="top-bar-left">
+    <div class="brand-logo" id="brandLogo">万</div>
+    <span class="brand-name">万物心选&敲开心招聘</span>
   </div>
-
-  <div class="tb-dropdown" id="ddExport">
-    <button class="tb-btn" onclick="toggleDD('ddExport')">📤 导出 ▾</button>
-    <div class="tb-menu">
-      <button onclick="closeAllDD();exportFile('csv')">📊 导出为 Excel 可打开的 CSV</button>
-      <button onclick="closeAllDD();exportFile('json')">💾 导出为 JSON 备份</button>
+  <div class="tb-right">
+    <div class="tb-dropdown admin-only" id="ddImport">
+      <button class="tb-btn" onclick="toggleDD('ddImport')">📥 导入 ▾</button>
+      <div class="tb-menu">
+        <button onclick="closeAllDD();openImportDialog()">📂 上传 CSV / JSON 文件</button>
+      </div>
     </div>
+    <div class="tb-dropdown admin-only" id="ddExport">
+      <button class="tb-btn" onclick="toggleDD('ddExport')">📤 导出 ▾</button>
+      <div class="tb-menu">
+        <button onclick="closeAllDD();exportFile('csv')">📊 导出 CSV</button>
+        <button onclick="closeAllDD();exportFile('json')">💾 导出 JSON 备份</button>
+      </div>
+    </div>
+    <button class="tb-btn admin-only" onclick="openAdminDialog()">⚙️ 后台管理</button>
+    <button class="tb-btn admin-only" id="btnLogout" onclick="logout()">🚪 退出</button>
   </div>
-
-  <button class="tb-btn danger" id="btnReset">🔄 恢复示例</button>
 </div>
 
-<section class="hero">
-  <h1>加入我们</h1>
-  <p>和一群优秀的人，一起做一件有意义的事。我们正在寻找各领域的专业伙伴。</p>
+<section class="hero" id="top">
+  <div class="hero-sub">万物心选&敲开心招聘</div>
+  <h1>加入我们，一起创造精彩</h1>
 </section>
 
-<div class="filter-bar" id="filterBar">
-  <button class="active" data-filter="all">全部</button>
-  <button data-filter="技术研发">技术研发</button>
-  <button data-filter="产品">产品</button>
-  <button data-filter="设计">设计</button>
-  <button data-filter="零售">零售</button>
-  <button data-filter="运营">运营</button>
-  <button data-filter="人力/行政/财务">人力/行政/财务</button>
-  <button data-filter="其他">其他</button>
-</div>
+<section class="about-section">
+  <div class="about-card">
+    <h2>关于我们</h2>
+    <div class="about-text" id="aboutDesc"></div>
+    <div class="about-stats">
+      <div class="stat-item">
+        <div class="stat-num" id="statJobs">0</div>
+        <div class="stat-label">在招岗位</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="filter-bar" id="filterBar"></div>
 
 <div class="jobs" id="jobList"></div>
 
-<div class="add-card" id="addCard">
+<div class="add-card admin-only" id="addCard">
   <button onclick="openForm()">+ 添加新岗位</button>
 </div>
 
@@ -284,40 +494,37 @@
 </div>
 
 <!-- 添加/编辑表单 -->
-<div class="overlay" id="formOverlay">
+<div class="overlay admin-only" id="formOverlay">
   <div class="panel panel-wide">
     <button class="close-btn" onclick="closeForm()">×</button>
     <h2 id="formTitle">添加岗位</h2>
-    <div style="height: 20px"></div>
+    <div style="height:16px"></div>
     <form id="jobForm" onsubmit="saveJob(event)">
       <input type="hidden" id="editIdx">
       <div class="form-group"><label>岗位名称 *</label>
         <input type="text" id="f_title" required placeholder="如：高级前端工程师"></div>
       <div class="form-row">
         <div class="form-group"><label>分类 *</label>
-          <select id="f_category" required>
-            <option value="技术研发">技术研发</option><option value="产品">产品</option>
-            <option value="设计">设计</option><option value="零售">零售</option>
-            <option value="运营">运营</option><option value="人力/行政/财务">人力/行政/财务</option>
-            <option value="其他">其他</option>
-          </select></div>
+          <select id="f_category" required></select></div>
         <div class="form-group"><label>工作地点 *</label>
           <input type="text" id="f_location" required placeholder="如：上海"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>薪资范围 *</label>
           <input type="text" id="f_salary" required placeholder="如：25K - 40K · 14薪"></div>
+        <div class="form-group"><label>招聘类型</label>
+          <select id="f_recruitType"><option value="社招">社招</option><option value="校招">校招</option></select></div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label>工作类型</label>
           <select id="f_type"><option value="全职">全职</option><option value="兼职">兼职</option><option value="实习">实习</option><option value="远程">远程</option></select></div>
       </div>
       <div class="form-group"><label>技能标签（逗号分隔）</label>
-        <input type="text" id="f_tags" placeholder="如：React, TypeScript, 3年以上">
-        <div class="form-hint">用英文逗号分隔多个标签</div></div>
+        <input type="text" id="f_tags" placeholder="如：React, TypeScript, 3年以上"></div>
       <div class="form-group"><label>岗位描述 *</label>
         <textarea id="f_desc" required placeholder="简要介绍这个岗位..."></textarea></div>
       <div class="form-group"><label>工作职责（每行一条）*</label>
-        <textarea id="f_duties" required rows="4" placeholder="每行写一条职责"></textarea>
-        <div class="form-hint">按下 Enter 换行，每行一条</div></div>
+        <textarea id="f_duties" required rows="4" placeholder="每行写一条职责"></textarea></div>
       <div class="form-group"><label>任职要求（每行一条）*</label>
         <textarea id="f_requirements" required rows="4" placeholder="每行写一条要求"></textarea></div>
       <div class="form-actions">
@@ -329,680 +536,668 @@
 </div>
 
 <!-- 导入对话框 -->
-<div class="overlay" id="importOverlay">
+<div class="overlay admin-only" id="importOverlay">
   <div class="panel panel-wide">
     <button class="close-btn" onclick="closeImportDialog()">×</button>
-    <h2>批量导入岗位数据</h2>
-    <p class="sub">支持从 Word、Excel 复制粘贴，或上传 CSV 文件。先下载模板能避免格式问题。</p>
-
-    <div class="tabs">
-      <button class="active" data-tab="paste" onclick="switchImportTab('paste')">📋 粘贴导入</button>
-      <button data-tab="file" onclick="switchImportTab('file')">📂 文件上传</button>
-      <button data-tab="template" onclick="switchImportTab('template')">📄 下载模板</button>
-    </div>
-
-    <!-- Tab: 粘贴 -->
-    <div id="tab-paste">
-      <div style="font-size:0.88rem;color:var(--muted);margin-bottom:14px;line-height:1.9">
-        <b style="color:var(--text)">两种粘贴方式，自动识别：</b><br>
-        🖼️ <b>表格方式</b>：从 Word / Excel / 网页 选中表格 → Ctrl+C 粘贴进来<br>
-        📝 <b>文本方式</b>：直接粘贴带字段名的文本，系统自动按关键字识别分配<br>
-        💡 多个岗位用 <code style="background:#f3f4f6;padding:1px 6px;border-radius:4px">---</code> 分隔
-      </div>
-
-      <div id="pasteInputWrap">
-        <textarea class="paste-area" id="pasteInput" placeholder='在这里粘贴...
-
-【文本格式示例】（从 Word 复制）：
-岗位名称：高级前端工程师
-分类：技术
-薪资：25K - 40K · 14薪
-工作地点：上海
-工作类型：全职
-技能标签：React、TypeScript、3年以上
-
-岗位描述：
-负责公司核心产品的前端架构设计与开发。
-
-岗位职责：
-1. 负责 Web 端产品的前端架构设计和核心功能开发
-2. 搭建团队前端组件库与工程化体系
-3. 与后端工程师协作完成接口联调
-
-任职要求：
-1. 计算机相关专业，本科及以上学历
-2. 3年以上前端开发经验，精通 HTML/CSS/JavaScript
-3. 熟悉 React 或 Vue 框架
-
----
-岗位名称：资深产品经理
-分类：产品
-薪资：30K - 50K · 14薪
-工作地点：北京
-...'></textarea>
-      </div>
-
-      <div style="margin-top:10px;display:flex;gap:8px">
-        <button class="tb-btn" type="button" onclick="loadTextExample('structured')">📋 加载文本示例</button>
-        <button class="tb-btn" type="button" onclick="loadTextExample('table')">🖼️ 加载表格示例</button>
-        <button class="tb-btn" type="button" onclick="document.getElementById('pasteInput').value=''">🧹 清空</button>
-      </div>
-
-      <div id="pasteFieldMap" style="display:none">
-        <div class="field-map">
-          <div class="field-map-title">请为识别到的列选择对应字段：</div>
-          <div id="fieldMapRows"></div>
-        </div>
-      </div>
-
-      <div id="pastePreview"></div>
-
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
-        <button class="btn-cancel" type="button" onclick="parsePaste()">🔍 解析预览</button>
-        <button class="btn-save" type="button" onclick="confirmImport()">✅ 确认导入</button>
-      </div>
-    </div>
-
-    <!-- Tab: 文件 -->
-    <div id="tab-file" style="display:none">
-      <div class="drop-zone" id="dropZone">
-        <div class="icon">📁</div>
-        <div><b>点击选择文件</b> 或拖拽文件到这里</div>
-        <div class="file-hint">支持 .csv 和 .json 格式</div>
-      </div>
-      <input type="file" id="fileInput" accept=".csv,.json" style="display:none">
-      <div id="filePreview"></div>
-      <div class="form-actions">
-        <button class="btn-save" type="button" id="fileImportBtn" onclick="confirmImport()" style="display:none">✅ 确认导入</button>
-      </div>
-    </div>
-
-    <!-- Tab: 模板 -->
-    <div id="tab-template" style="display:none">
-      <div class="template-box">
-        <div class="icon">📄</div>
-        <h3 style="margin-bottom:6px">下载 Excel 模板</h3>
-        <p>模板包含所有必填字段的表头，用 Excel 打开后按行填写即可。<br>
-        填好后"另存为 CSV（逗号分隔）"，再回到"文件上传"标签页导入。</p>
-        <button class="btn" onclick="downloadTemplate()">⬇️ 下载 CSV 模板</button>
-      </div>
-      <div style="margin-top:22px;padding:16px;background:#fafafa;border-radius:8px;font-size:0.85rem">
-        <b style="color:var(--accent)">📖 模板字段说明：</b>
-        <ul style="margin-top:8px;padding-left:18px;color:var(--muted);line-height:1.9">
-          <li><b>岗位名称</b> - 必填，如"高级前端工程师"</li>
-          <li><b>分类</b> - 必填，可选：技术研发 / 产品 / 设计 / 零售 / 运营 / 人力/行政/财务 / 其他</li>
-          <li><b>薪资</b> - 必填，如"25K - 40K · 14薪"</li>
-          <li><b>地点</b> - 必填，如"上海"</li>
-          <li><b>类型</b> - 可选，默认"全职"</li>
-          <li><b>标签</b> - 多个标签用<b>英文分号</b>分隔，如"React;TypeScript;3年以上"</li>
-          <li><b>描述</b> - 必填，岗位简介</li>
-          <li><b>职责</b> - 多条用<b>英文分号</b>分隔</li>
-          <li><b>要求</b> - 多条用<b>英文分号</b>分隔</li>
-        </ul>
-      </div>
-    </div>
-
+    <h2>批量导入岗位</h2>
+    <p class="sub">上传 CSV 或 JSON 文件，一键批量导入</p>
+    <div class="drop-zone" id="dropZone"><div class="icon">📁</div><div><b>点击选择文件</b> 或拖拽文件到这里</div><div class="file-hint">支持 .csv 和 .json 格式</div></div>
+    <input type="file" id="fileInput" accept=".csv,.json" style="display:none">
+    <div id="filePreview"></div>
+    <div class="form-actions"><button class="btn-save" type="button" id="fileImportBtn" onclick="confirmImport()" style="display:none">✅ 确认导入</button></div>
     <div class="import-result" id="importResult"></div>
+  </div>
+</div>
+
+<!-- 密码登录弹窗 -->
+<div class="overlay" id="pwdOverlay">
+  <div class="panel" style="max-width:420px;text-align:center">
+    <button class="close-btn" onclick="closePwdDialog()">×</button>
+    <div style="font-size:2.2rem;margin-bottom:8px">🔐</div>
+    <h2>管理员登录</h2>
+    <p class="sub">请输入管理员密码以进入后台</p>
+    <div class="form-group">
+      <input type="password" id="adminPwdInput" placeholder="请输入密码" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="pwdError" style="color:var(--danger);font-size:0.85rem;min-height:20px;margin-bottom:10px"></div>
+    <button class="btn-save" style="width:100%" onclick="doLogin()">登录</button>
+  </div>
+</div>
+
+<!-- 投递弹窗 -->
+<div class="overlay" id="applyOverlay">
+  <div class="panel" style="max-width:480px">
+    <button class="close-btn" onclick="closeOverlay('applyOverlay')">×</button>
+    <h2 id="applyTitle">投递简历</h2>
+    <p class="sub">请填写您的基本信息</p>
+    <div class="apply-form-group"><label>姓名 *</label><input type="text" id="applyName" placeholder="请输入您的姓名"></div>
+    <div class="apply-form-group"><label>手机号 *</label><input type="tel" id="applyPhone" placeholder="请输入手机号"></div>
+    <div class="apply-form-group"><label>邮箱</label><input type="email" id="applyEmail" placeholder="请输入邮箱（可选）"></div>
+    <div class="apply-form-group"><label>留言（可选）</label><textarea id="applyMsg" rows="3" placeholder="请留言"></textarea></div>
+    <div style="background:var(--accent-bg);border-radius:8px;padding:14px;font-size:0.85rem;color:var(--muted);margin-bottom:18px">
+      📧 简历投递邮箱：<b id="applyEmailShow" style="color:var(--accent)">hr@wanwu.com</b><br>
+      💡 建议在邮件正文中附上以上信息，并将简历作为附件发送。
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeOverlay('applyOverlay')">取消</button>
+      <button class="btn-save" onclick="confirmApply()">✅ 去发送邮件</button>
+    </div>
+  </div>
+</div>
+
+<!-- 后台管理 -->
+<div class="overlay admin-only" id="adminOverlay">
+  <div class="panel panel-wide">
+    <button class="close-btn" onclick="closeOverlay('adminOverlay')">×</button>
+    <h2>后台管理</h2>
+    <p class="sub">管理公司简介、岗位分类、工作城市和简历投递邮箱</p>
+
+    <div class="form-group">
+      <label>公司简介</label>
+      <textarea id="f_about" rows="5" style="resize:vertical"></textarea>
+      <div class="form-hint">显示在「关于我们」区块，文本越多字号会自动缩小</div>
+    </div>
+
+    <div class="admin-group">
+      <label>岗位分类</label>
+      <div class="tag-box" id="catTagBox"></div>
+      <div class="tag-add-row">
+        <input type="text" id="f_catNew" placeholder="输入新分类名称，回车添加" maxlength="20">
+        <button type="button" onclick="addOneCat()">＋ 添加</button>
+      </div>
+      <div class="form-hint">点击标签右侧 × 可删除该分类；「全部」为系统项不可删</div>
+    </div>
+
+    <div class="admin-group">
+      <label>工作城市</label>
+      <div class="tag-box" id="cityTagBox"></div>
+      <div class="tag-add-row">
+        <input type="text" id="f_cityNew" placeholder="输入城市名称，回车添加" maxlength="20">
+        <button type="button" onclick="addOneCity()">＋ 添加</button>
+      </div>
+      <div class="form-hint">保存后将作为岗位表单的可选项和筛选栏的下拉列表</div>
+    </div>
+
+    <div class="form-group">
+      <label>简历投递邮箱</label>
+      <input type="email" id="f_applyEmail" placeholder="如：hr@wanwu.com">
+      <div class="form-hint">将显示在投递弹窗和页脚</div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeOverlay('adminOverlay')">取消</button>
+      <button class="btn-save" onclick="saveAdmin()">保存设置</button>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<footer class="site-footer">
+  <div class="footer-brand">万物心选&敲开心招聘</div>
+  <div class="footer-email" id="footerEmail">简历投递：<a href="mailto:hr@wanwu.com">hr@wanwu.com</a></div>
+  <div class="footer-copyright">© <span id="yearSpan">2025</span> 万物心选 · 版权所有</div>
+  <div class="edit-footer"><button onclick="openAdminDialog()">⚙️ 管理设置</button></div>
+</footer>
+
 <script>
+/* ============ 权限 ============ */
+const ADMIN_PWD = 'wanwuhr888';
+const SESSION_KEY = 'wanwu_admin_session';
+function isAdmin() { return sessionStorage.getItem(SESSION_KEY) === '1'; }
+function enterAdminMode() {
+  sessionStorage.setItem(SESSION_KEY, '1');
+  document.body.classList.add('admin');
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+}
+function exitAdminMode() {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.body.classList.remove('admin');
+  document.querySelectorAll('.admin-only').forEach(el => {
+    if (el.classList.contains('tb-btn') || el.classList.contains('tb-dropdown')) el.style.display = 'none';
+    else el.style.display = '';
+  });
+}
+function checkAd() { return ADMIN_PWD; }
+
+/* ============ 存储 ============ */
+const STORAGE_JOBS = 'wanwu_jobs_v1';
+const STORAGE_ABOUT = 'wanwu_about_v1';
+const STORAGE_CATS = 'wanwu_cats_v1';
+const STORAGE_CITIES = 'wanwu_cities_v1';
+const STORAGE_EMAIL = 'wanwu_email_v1';
+
 const DEFAULT_JOBS = [
-  { title: "高级前端工程师", category: "技术研发", salary: "25K - 40K · 14薪", location: "上海", type: "全职",
+  { title: "高级前端工程师", category: "技术研发", salary: "25K - 40K · 14薪", location: "上海", type: "全职", recruitType: "社招",
     tags: ["React", "TypeScript", "3年以上"],
-    desc: "负责公司核心产品的前端架构设计与开发，推动前端工程化落地，优化用户体验与性能。",
-    duties: ["负责Web端产品的前端架构设计和核心功能开发","搭建团队前端组件库与工程化体系","与后端工程师协作完成接口联调","跟进前端技术趋势，推动技术升级"],
-    requirements: ["计算机相关专业，本科及以上学历","3年以上前端开发经验，精通 HTML/CSS/JavaScript","熟悉 React 或 Vue 框架，有大型项目经验","具备良好的沟通能力和团队协作精神"] },
-  { title: "资深产品经理", category: "产品", salary: "30K - 50K · 14薪", location: "北京", type: "全职",
+    desc: "负责公司核心产品的前端架构设计与开发，推动前端工程化落地。",
+    duties: ["负责Web端产品的前端架构设计和核心功能开发","搭建团队前端组件库与工程化体系","与后端工程师协作完成接口联调"],
+    requirements: ["计算机相关专业本科及以上","3年以上前端开发经验","熟悉 React 或 Vue 框架"] },
+  { title: "资深产品经理", category: "产品", salary: "30K - 50K · 14薪", location: "北京", type: "全职", recruitType: "社招",
     tags: ["B端产品", "SaaS", "5年以上"],
-    desc: "主导企业级SaaS产品的规划与设计，深入理解客户需求，推动产品从0到1落地。",
-    duties: ["负责产品战略规划、需求分析与迭代","撰写PRD文档，与设计、研发团队紧密协作","跟踪产品数据，持续优化产品体验","参与市场调研与竞品分析"],
-    requirements: ["5年以上产品经理经验，有B端/SaaS产品经验优先","具备扎实的产品方法论和结构化思维","优秀的沟通表达和项目推动能力","有从0到1搭建产品经验者优先"] },
-  { title: "UI/UX 设计师", category: "设计", salary: "18K - 30K · 13薪", location: "深圳", type: "全职",
+    desc: "主导产品规划与设计，深入理解客户需求，推动产品迭代。",
+    duties: ["负责产品规划、需求分析与迭代","撰写PRD文档与设计研发协作","跟踪产品数据持续优化"],
+    requirements: ["5年以上产品经理经验","具备产品方法论和结构化思维","优秀的沟通表达能力"] },
+  { title: "UI/UX 设计师", category: "设计", salary: "18K - 30K · 13薪", location: "深圳", type: "全职", recruitType: "社招",
     tags: ["Figma", "交互设计", "3年以上"],
-    desc: "负责产品界面设计与交互体验优化，打造简洁、优雅、易用的产品体验。",
-    duties: ["负责产品界面视觉设计和交互设计","制定并维护产品设计规范","参与产品需求评审，提供设计方案","对设计稿的还原度进行跟进"],
-    requirements: ["3年以上UI/UX设计经验","精通 Figma、Sketch 等设计工具","具备良好的审美和视觉表达能力","交互设计经验丰富者优先"] },
-  { title: "后端开发工程师（Java）", category: "技术研发", salary: "22K - 35K · 14薪", location: "杭州", type: "全职",
-    tags: ["Java", "Spring", "微服务"],
-    desc: "负责后端服务架构设计与核心模块开发，构建高可用、高性能的分布式系统。",
-    duties: ["负责后端系统架构设计和核心功能开发","参与系统性能优化和技术方案评审","编写单元测试和技术文档","解决线上问题，保障系统稳定运行"],
-    requirements: ["3年以上Java后端开发经验","熟悉 Spring 全家桶、MySQL、Redis","了解微服务架构和分布式技术","有高并发系统开发经验优先"] },
-  { title: "市场运营专员", category: "运营", salary: "12K - 20K · 13薪", location: "上海", type: "全职",
-    tags: ["内容运营", "新媒体", "2年以上"],
-    desc: "负责品牌内容策划与新媒体运营，提升品牌知名度与用户活跃度。",
-    duties: ["负责官方公众号、知乎等平台内容运营","策划并执行市场活动，提升品牌曝光","分析运营数据，持续优化策略","与设计师、产品团队协作产出物料"],
-    requirements: ["2年以上市场/运营相关经验","具备良好的文字表达和内容策划能力","熟悉主流新媒体平台运营规则","有独立策划并执行过活动者优先"] },
-  { title: "数据运营分析师", category: "运营", salary: "18K - 28K · 13薪", location: "北京", type: "全职",
-    tags: ["SQL", "Python", "数据驱动"],
-    desc: "通过数据发现业务机会，为产品和运营决策提供有力的数据支持。",
-    duties: ["负责业务数据指标体系的搭建与维护","进行专题分析，输出分析报告和建议","构建数据看板，跟踪核心指标变化","推动数据驱动决策的文化建设"],
-    requirements: ["3年以上数据分析或数据运营经验","熟练使用 SQL，会 Python 优先","具备良好的业务理解和结构化思维","有互联网公司数据经验优先"] }
+    desc: "负责产品界面设计与交互体验优化。",
+    duties: ["负责产品界面视觉设计和交互设计","制定并维护产品设计规范","参与产品需求评审提供设计方案"],
+    requirements: ["3年以上UI/UX设计经验","精通 Figma、Sketch 等工具","具备良好审美和视觉表达能力"] }
 ];
+const DEFAULT_ABOUT = "万物心选是一家充满活力的创新型企业，业务覆盖技术研发、产品设计、零售运营等多个领域。\n\n在这里，每一份才华都能被看见，每一个想法都值得被实现。我们致力于打造一支高效、有创造力的团队，共同推动公司业务的持续发展。\n\n如果你有热情、有想法、有行动力，欢迎加入我们！";
+const DEFAULT_CATS = ['技术研发','产品','设计','零售','运营','人力/行政/财务','其他'];
+const DEFAULT_CITIES = ['北京','上海','广州','深圳','杭州','成都','南京','武汉','西安'];
+const DEFAULT_EMAIL = 'hr@wanwu.com';
 
-const STORAGE_KEY = 'careers_page_jobs_v1';
-const FIELD_MAP = [
-  { key: 'title', label: '岗位名称', aliases: ['岗位名称','岗位','职位','职位名称','title','name'] },
-  { key: 'category', label: '分类',   aliases: ['分类','类别','类型','部门','category'] },
-  { key: 'salary',  label: '薪资',   aliases: ['薪资','工资','薪水','薪酬','salary'] },
-  { key: 'location',label: '地点',   aliases: ['地点','城市','工作地点','工作城市','location','city'] },
-  { key: 'type',    label: '工作类型', aliases: ['类型','工作类型','雇佣类型','全职/兼职','type'] },
-  { key: 'tags',    label: '技能标签', aliases: ['标签','技能','技能标签','关键词','tags','skills'] },
-  { key: 'desc',    label: '岗位描述', aliases: ['描述','岗位描述','简介','desc','description'] },
-  { key: 'duties',  label: '工作职责', aliases: ['职责','工作职责','工作内容','duties','responsibilities'] },
-  { key: 'requirements', label: '任职要求', aliases: ['要求','任职要求','资格','requirements','qualifications'] }
-];
-const DEFAULT_CATEGORY = '技术研发';
-const DEFAULT_TYPE = '全职';
+/* ============ 解析配置 ============ */
+const JOB_PARSER_CONFIG = {
+  categoryEnums: ['技术研发','产品','设计','零售','运营','人力/行政/财务','人力','行政','财务','其他','技术','市场'],
+  typeEnums: ['全职','兼职','实习','远程','Contractor','Full-time','Part-time','Intern','Remote'],
+  recruitTypeEnums: ['社招','校招','社会招聘','校园招聘'],
+  cities: ['北京','上海','广州','深圳','杭州','成都','南京','武汉','西安','重庆','天津','苏州','厦门','青岛','长沙'],
+  fieldAliases: {
+    title: ['岗位名称','岗位','职位','职位名称','岗位名','title','name'],
+    category: ['岗位分类','分类','类别','部门','category','team'],
+    salary: ['薪资','工资','薪水','薪酬','salary','pay'],
+    location: ['工作地点','地点','城市','工作城市','办公地点','location','city'],
+    type: ['工作类型','类型','雇佣类型','type','employment'],
+    recruitType: ['招聘类型','招聘方式','recruitType','recruit'],
+    tags: ['技能标签','标签','技能','关键词','tags','skills','keyword'],
+    desc: ['岗位描述','描述','岗位简介','简介','desc','description','intro','overview'],
+    duties: ['工作职责','职责','岗位职责','工作内容','duties','responsibilities','work','tasks'],
+    requirements: ['任职要求','要求','任职资格','资格','requirements','qualifications','need']
+  }
+};
 
+/* ============ 全局状态 ============ */
 let jobs = [];
+let categories = [...DEFAULT_CATS];
+let cities = [...DEFAULT_CITIES];
+let applyEmail = DEFAULT_EMAIL;
 let currentFilter = 'all';
-let editMode = false;
+let currentCity = 'all';
 let pendingImportJobs = null;
+let brandLogoClickCount = 0;
+let brandLogoClickTimer = null;
 
 const jobList = document.getElementById('jobList');
 const filterBar = document.getElementById('filterBar');
-const detailOverlay = document.getElementById('detailOverlay');
 const detailPanel = document.getElementById('detailPanel');
-const formOverlay = document.getElementById('formOverlay');
-const importOverlay = document.getElementById('importOverlay');
 
-/* ---------- 存储 ---------- */
-const CATEGORY_MIGRATE = { '技术': '技术研发', '市场': '运营' };
-function loadJobs() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    jobs = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_JOBS));
-  } catch { jobs = JSON.parse(JSON.stringify(DEFAULT_JOBS)); }
-  let changed = false;
-  for (const j of jobs) {
-    if (CATEGORY_MIGRATE[j.category]) { j.category = CATEGORY_MIGRATE[j.category]; changed = true; }
-  }
-  if (changed) saveJobs();
+/* ============ 存储函数 ============ */
+function loadAll() {
+  try { jobs = JSON.parse(localStorage.getItem(STORAGE_JOBS)) || JSON.parse(JSON.stringify(DEFAULT_JOBS)); } catch { jobs = JSON.parse(JSON.stringify(DEFAULT_JOBS)); }
+  try { renderAbout(localStorage.getItem(STORAGE_ABOUT) || DEFAULT_ABOUT); } catch {}
+  try { categories = JSON.parse(localStorage.getItem(STORAGE_CATS)) || [...DEFAULT_CATS]; } catch { categories = [...DEFAULT_CATS]; }
+  try { cities = JSON.parse(localStorage.getItem(STORAGE_CITIES)) || [...DEFAULT_CITIES]; } catch { cities = [...DEFAULT_CITIES]; }
+  try { applyEmail = localStorage.getItem(STORAGE_EMAIL) || DEFAULT_EMAIL; } catch {}
+  updateFooterEmail();
+  updateStatJobs();
 }
-function saveJobs() { localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs)); }
+function saveJobs() { localStorage.setItem(STORAGE_JOBS, JSON.stringify(jobs)); }
+function saveCats(c) { localStorage.setItem(STORAGE_CATS, JSON.stringify(c)); }
+function saveCities(c) { localStorage.setItem(STORAGE_CITIES, JSON.stringify(c)); }
+function saveEmail(e) { localStorage.setItem(STORAGE_EMAIL, e); }
 
-/* ---------- 工具 ---------- */
-function showToast(msg, type = 'success') {
+/* ============ 权限弹窗 ============ */
+function openPwdDialog() {
+  document.getElementById('adminPwdInput').value = '';
+  document.getElementById('pwdError').textContent = '';
+  openOverlay('pwdOverlay');
+  setTimeout(() => document.getElementById('adminPwdInput').focus(), 100);
+}
+function closePwdDialog() { closeOverlay('pwdOverlay'); }
+function doLogin() {
+  const pwd = document.getElementById('adminPwdInput').value;
+  const err = document.getElementById('pwdError');
+  if (!pwd) { err.textContent = '请输入密码'; return; }
+  if (pwd !== ADMIN_PWD) { err.textContent = '密码错误'; return; }
+  closePwdDialog();
+  enterAdminMode();
+  showToast('✅ 已进入后台管理模式');
+  location.hash = '';
+  scrollTo({top:0,behavior:'smooth'});
+}
+function logout() {
+  exitAdminMode();
+  showToast('已退出后台');
+}
+
+/* ============ Overlay ============ */
+function openOverlay(id) { document.getElementById(id).classList.add('show'); document.body.style.overflow = 'hidden'; }
+function closeOverlay(id) { document.getElementById(id).classList.remove('show'); document.body.style.overflow = ''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.overlay.show').forEach(o => o.classList.remove('show')); });
+
+/* ============ 工具 ============ */
+function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast show ' + type;
+  t.className = 'toast show ' + (type === 'success' ? 'success' : type === 'error' ? 'error' : '');
   setTimeout(() => t.classList.remove('show'), 2400);
 }
-
-function splitMulti(val) {
-  if (!val) return [];
-  return String(val).split(/[;；\n]/).map(s => s.trim()).filter(Boolean);
+function splitMulti(v) { if (!v) return []; return String(v).split(/[;；\n]/).map(s => s.trim()).filter(Boolean); }
+function joinMulti(a) { return Array.isArray(a) ? a.join('；') : String(a || ''); }
+function getApplyEmail() { return applyEmail; }
+function updateFooterEmail() {
+  const el = document.getElementById('footerEmail');
+  if (el) el.innerHTML = '简历投递：<a href="mailto:' + applyEmail + '">' + applyEmail + '</a>';
+  const as = document.getElementById('applyEmailShow');
+  if (as) as.textContent = applyEmail;
 }
-function joinMulti(arr) { return Array.isArray(arr) ? arr.join('；') : String(arr || ''); }
+function updateStatJobs() {
+  const el = document.getElementById('statJobs');
+  if (el) el.textContent = jobs.length;
+}
 
-/* ---------- 渲染岗位列表 ---------- */
+/* ============ 渲染 ============ */
+function renderFilterBar() {
+  const cityOpts = ['all', ...cities];
+  if (!cityOpts.includes(currentCity)) currentCity = 'all';
+  filterBar.innerHTML =
+    '<button data-filter="all"' + (currentFilter === 'all' ? ' class="active"' : '') + '>全部</button>' +
+    categories.map(ct => '<button data-filter="' + ct + '"' + (currentFilter === ct ? ' class="active"' : '') + '>' + ct + '</button>').join('') +
+    '<select id="cityFilter" class="city-filter">' +
+      cityOpts.map(c => '<option value="' + c + '"' + (currentCity === c ? ' selected' : '') + '>' + (c === 'all' ? '🌍 全部城市' : c) + '</option>').join('') +
+    '</select>';
+  filterBar.querySelectorAll('button').forEach(b => {
+    b.onclick = () => {
+      filterBar.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      currentFilter = b.dataset.filter;
+      renderJobs();
+    };
+  });
+  const cs = document.getElementById('cityFilter');
+  if (cs) cs.onchange = () => { currentCity = cs.value; renderJobs(); };
+}
+
 function renderJobs() {
-  const list = currentFilter === 'all' ? jobs : jobs.filter(j => j.category === currentFilter);
+  let list = currentFilter === 'all' ? jobs : jobs.filter(j => j.category === currentFilter);
+  if (currentCity !== 'all') list = list.filter(j => j.location === currentCity);
+  updateStatJobs();
   jobList.innerHTML = list.length ? list.map(j => {
     const idx = jobs.indexOf(j);
-    return `
-    <div class="job-card" data-idx="${idx}">
-      <div class="edit-bar">
-        <button class="btn-edit" onclick="event.stopPropagation();openForm(${idx})">编辑</button>
-        <button class="btn-del" onclick="event.stopPropagation();deleteJob(${idx})">删除</button>
-      </div>
-      <div class="job-top">
-        <div class="job-title">${j.title}</div>
-        <div class="job-salary">${j.salary}</div>
-      </div>
-      <div class="job-meta">
-        <span>${j.category} · ${j.type}</span>
-        <span>${j.location}</span>
-      </div>
-      <div class="job-tags">${(j.tags||[]).map(t => `<span class="tag">${t}</span>`).join('')}</div>
-    </div>`;
-  }).join('') : '<div class="empty">暂无匹配的岗位' + (editMode ? '，点击下方按钮添加' : '') + '</div>';
-
-  if (!editMode) {
-    document.querySelectorAll('.job-card').forEach(card => {
-      card.addEventListener('click', () => openDetail(parseInt(card.dataset.idx)));
+    return '<div class="job-card fade-in-up" data-idx="' + idx + '">' +
+      '<div class="edit-bar">' +
+        '<button class="btn-edit" onclick="event.stopPropagation();openForm(' + idx + ')">编辑</button>' +
+        '<button class="btn-del" onclick="event.stopPropagation();deleteJob(' + idx + ')">删除</button>' +
+      '</div>' +
+      '<div class="job-top"><div class="job-title">' + j.title + '</div><div class="job-salary">' + j.salary + '</div></div>' +
+      '<div class="job-meta">' +
+        '<span>' + j.category + '</span><span>' + (j.recruitType || '社招') + '</span><span>' + j.type + '</span><span class="loc-icon">' + j.location + '</span>' +
+      '</div>' +
+      '<div class="job-tags">' + (j.tags||[]).map(t => '<span class="tag">' + t + '</span>').join('') + '</div>' +
+    '</div>';
+  }).join('') : '<div class="empty">暂无' + (isAdmin() ? '，点击下方按钮添加' : '') + '岗位</div>';
+  if (!isAdmin()) {
+    jobList.querySelectorAll('.job-card').forEach(card => {
+      card.onclick = () => openDetail(parseInt(card.dataset.idx));
     });
   }
 }
 
-filterBar.addEventListener('click', e => {
-  if (e.target.tagName === 'BUTTON') {
-    document.querySelectorAll('#filterBar button').forEach(b => b.classList.remove('active'));
-    e.target.classList.add('active');
-    currentFilter = e.target.dataset.filter;
-    renderJobs();
-  }
-});
-
-/* ---------- 详情 ---------- */
+/* ============ 详情 ============ */
 function openDetail(idx) {
   const j = jobs[idx];
-  detailPanel.innerHTML = `
-    <button class="close-btn" onclick="closeOverlay('detailOverlay')">×</button>
-    <h2>${j.title}</h2>
-    <div class="job-salary">${j.salary}</div>
-    <div class="job-meta"><span>${j.category} · ${j.type}</span><span>${j.location}</span></div>
-    <section><h3>岗位描述</h3><p>${j.desc}</p></section>
-    <section><h3>工作职责</h3><ul>${(j.duties||[]).map(d => `<li>${d}</li>`).join('')}</ul></section>
-    <section><h3>任职要求</h3><ul>${(j.requirements||[]).map(r => `<li>${r}</li>`).join('')}</ul></section>
-    <button class="apply-btn" onclick="alert('感谢关注！简历投递邮箱：hr@example.com')">立即投递简历</button>
-  `;
+  detailPanel.innerHTML =
+    '<button class="close-btn" onclick="closeOverlay(\'detailOverlay\')">×</button>' +
+    '<h2>' + j.title + '</h2>' +
+    '<div class="job-salary">' + j.salary + '</div>' +
+    '<div class="job-meta"><span>' + j.category + ' · ' + (j.recruitType || '社招') + ' · ' + j.type + '</span><span>📍 ' + j.location + '</span></div>' +
+    '<section><h3>岗位描述</h3><p>' + j.desc + '</p></section>' +
+    '<section><h3>工作职责</h3><ul>' + (j.duties||[]).map(d => '<li>' + d + '</li>').join('') + '</ul></section>' +
+    '<section><h3>任职要求</h3><ul>' + (j.requirements||[]).map(r => '<li>' + r + '</li>').join('') + '</ul></section>' +
+    '<button class="apply-btn" onclick="openApply(' + idx + ')">📮 投递简历</button>';
   openOverlay('detailOverlay');
 }
 
-/* ---------- Overlay 通用 ---------- */
-function openOverlay(id) { document.getElementById(id).classList.add('show'); document.body.style.overflow = 'hidden'; }
-function closeOverlay(id) { document.getElementById(id).classList.remove('show'); document.body.style.overflow = ''; }
-document.querySelectorAll('.overlay').forEach(ov => {
-  ov.addEventListener('click', e => { if (e.target === ov) { ov.classList.remove('show'); document.body.style.overflow = ''; } });
-});
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.overlay.show').forEach(o => o.classList.remove('show'));
-    document.body.style.overflow = '';
-    closeAllDD();
-  }
-});
-
-/* ---------- 下拉菜单 ---------- */
-function toggleDD(id) {
-  const el = document.getElementById(id);
-  const isOpen = el.classList.contains('open');
-  closeAllDD();
-  if (!isOpen) el.classList.add('open');
+/* ============ 投递 ============ */
+let applyingJobIdx = -1;
+function openApply(idx) {
+  applyingJobIdx = idx;
+  const j = jobs[idx];
+  document.getElementById('applyTitle').textContent = '投递简历 - ' + j.title;
+  document.getElementById('applyEmail').value = '';
+  document.getElementById('applyPhone').value = '';
+  document.getElementById('applyName').value = '';
+  document.getElementById('applyMsg').value = '';
+  updateFooterEmail();
+  closeOverlay('detailOverlay');
+  openOverlay('applyOverlay');
 }
-function closeAllDD() { document.querySelectorAll('.tb-dropdown.open').forEach(d => d.classList.remove('open')); }
-document.addEventListener('click', e => {
-  if (!e.target.closest('.tb-dropdown')) closeAllDD();
-});
+function confirmApply() {
+  const name = document.getElementById('applyName').value.trim();
+  const phone = document.getElementById('applyPhone').value.trim();
+  if (!name || !phone) { showToast('请填写姓名和手机号', 'error'); return; }
+  const j = jobs[applyingJobIdx];
+  const body = '您好，\n\n我对【' + j.title + '】岗位很感兴趣，随信附上我的简历。\n\n个人信息：\n姓名：' + name + '\n手机：' + phone + '\n邮箱：' + (document.getElementById('applyEmail').value || '未提供') + '\n\n' + (document.getElementById('applyMsg').value || '') + '\n\n期待回复！';
+  const subject = '求职-' + name + '-' + j.title;
+  const mailto = 'mailto:' + applyEmail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  window.location.href = mailto;
+  showToast('✅ 已打开邮件客户端');
+  closeOverlay('applyOverlay');
+}
 
-/* ---------- 编辑模式 & 表单 ---------- */
-document.getElementById('btnEdit').addEventListener('click', () => {
-  editMode = !editMode;
-  document.body.classList.toggle('edit-mode', editMode);
-  document.getElementById('btnEdit').classList.toggle('active', editMode);
-  document.getElementById('btnEdit').textContent = editMode ? '✅ 完成编辑' : '✏️ 编辑模式';
-  if (!editMode) closeForm();
-  renderJobs();
-});
-
+/* ============ 编辑岗位 ============ */
 function openForm(idx) {
-  document.getElementById('formTitle').textContent = idx !== undefined ? '编辑岗位' : '添加岗位';
-  document.getElementById('editIdx').value = idx !== undefined ? idx : '';
+  const f = document.getElementById('f_category');
+  f.innerHTML = categories.map(c => '<option value="' + c + '">' + c + '</option>').join('');
+  const editIdx = document.getElementById('editIdx');
   if (idx !== undefined) {
     const j = jobs[idx];
+    editIdx.value = idx;
+    document.getElementById('formTitle').textContent = '编辑岗位';
     document.getElementById('f_title').value = j.title;
     document.getElementById('f_category').value = j.category;
     document.getElementById('f_location').value = j.location;
     document.getElementById('f_salary').value = j.salary;
     document.getElementById('f_type').value = j.type;
-    document.getElementById('f_tags').value = (j.tags||[]).join(', ');
+    document.getElementById('f_recruitType').value = j.recruitType || '社招';
+    document.getElementById('f_tags').value = joinMulti(j.tags);
     document.getElementById('f_desc').value = j.desc;
-    document.getElementById('f_duties').value = (j.duties||[]).join('\n');
-    document.getElementById('f_requirements').value = (j.requirements||[]).join('\n');
+    document.getElementById('f_duties').value = joinMulti(j.duties);
+    document.getElementById('f_requirements').value = joinMulti(j.requirements);
   } else {
+    editIdx.value = '';
+    document.getElementById('formTitle').textContent = '添加岗位';
     document.getElementById('jobForm').reset();
   }
   openOverlay('formOverlay');
 }
 function closeForm() { closeOverlay('formOverlay'); }
-
 function saveJob(e) {
   e.preventDefault();
-  const idxInput = document.getElementById('editIdx').value;
-  const data = {
+  const idx = document.getElementById('editIdx').value;
+  const j = {
     title: document.getElementById('f_title').value.trim(),
     category: document.getElementById('f_category').value,
     location: document.getElementById('f_location').value.trim(),
     salary: document.getElementById('f_salary').value.trim(),
     type: document.getElementById('f_type').value,
-    tags: splitMulti(document.getElementById('f_tags').value.replace(/,/g, ';')),
+    recruitType: document.getElementById('f_recruitType').value,
+    tags: splitMulti(document.getElementById('f_tags').value),
     desc: document.getElementById('f_desc').value.trim(),
-    duties: document.getElementById('f_duties').value.split('\n').map(s => s.trim()).filter(Boolean),
-    requirements: document.getElementById('f_requirements').value.split('\n').map(s => s.trim()).filter(Boolean)
+    duties: splitMulti(document.getElementById('f_duties').value),
+    requirements: splitMulti(document.getElementById('f_requirements').value)
   };
-  if (idxInput === '') { jobs.push(data); showToast('✅ 岗位已添加'); }
-  else { jobs[parseInt(idxInput)] = data; showToast('✅ 岗位已更新'); }
-  saveJobs(); closeForm(); renderJobs();
+  if (idx) jobs[parseInt(idx)] = j; else jobs.push(j);
+  saveJobs();
+  renderJobs();
+  closeForm();
+  showToast('✅ 保存成功');
 }
-
 function deleteJob(idx) {
-  if (!confirm(`确认删除「${jobs[idx].title}」？此操作不可撤销。`)) return;
-  jobs.splice(idx, 1); saveJobs(); renderJobs(); showToast('🗑️ 已删除');
+  if (!confirm('确定删除该岗位？')) return;
+  jobs.splice(idx, 1);
+  saveJobs();
+  renderJobs();
+  showToast('已删除');
 }
 
-/* ---------- 导入对话框 ---------- */
-function openImportDialog(tab) {
-  document.getElementById('pasteInput').value = '';
-  document.getElementById('pastePreview').innerHTML = '';
-  document.getElementById('pasteFieldMap').style.display = 'none';
-  document.getElementById('pasteFieldMap').innerHTML = '';
-  document.getElementById('filePreview').innerHTML = '';
-  document.getElementById('fileImportBtn').style.display = 'none';
-  document.getElementById('importResult').className = 'import-result';
-  document.getElementById('importResult').textContent = '';
-  pendingImportJobs = null;
-  switchImportTab(tab || 'paste');
-  openOverlay('importOverlay');
-}
-function closeImportDialog() { closeOverlay('importOverlay'); }
-
-function switchImportTab(name) {
-  document.querySelectorAll('#importOverlay .tabs button').forEach(b => b.classList.remove('active'));
-  document.querySelector(`#importOverlay .tabs button[data-tab="${name}"]`).classList.add('active');
-  ['paste','file','template'].forEach(t => { document.getElementById('tab-'+t).style.display = (t === name ? '' : 'none'); });
+/* ============ 关于我们 ============ */
+function renderAbout(text) {
+  const el = document.getElementById('aboutDesc');
+  if (!el) return;
+  el.textContent = text;
+  const len = text.length;
+  let fs = 0.88;
+  if (len > 120) fs = 0.85;
+  if (len > 200) fs = 0.82;
+  if (len > 300) fs = 0.79;
+  if (len > 450) fs = 0.76;
+  if (len > 600) fs = 0.73;
+  el.style.fontSize = fs + 'rem';
 }
 
-const TEXT_FIELD_MAP = [
-  { key: 'title',        aliases: ['岗位名称','职位名称','招聘岗位','岗位','职位','title'] },
-  { key: 'category',     aliases: ['分类','类别','部门','所属部门','category'] },
-  { key: 'salary',       aliases: ['薪资','工资','薪水','薪酬','待遇','salary'] },
-  { key: 'location',     aliases: ['工作地点','地点','城市','办公地点','location','city'] },
-  { key: 'type',         aliases: ['工作类型','类型','雇佣性质','雇佣类型','type'] },
-  { key: 'tags',         aliases: ['技能标签','关键词','技能要求','技术栈','标签','tags'] },
-  { key: 'desc',         aliases: ['岗位描述','职位描述','工作描述','岗位简介','desc','description'] },
-  { key: 'duties',       aliases: ['岗位职责','工作职责','主要职责','工作内容','duties','responsibilities'] },
-  { key: 'requirements', aliases: ['任职要求','岗位要求','职位要求','资格要求','必备条件','requirements','qualifications'] }
-];
-
-/* ---- 表格解析 ---- */
-function parsePastedText(text) {
-  const rows = [];
-  const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
-  for (const line of lines) {
-    let cells;
-    if (line.includes('\t')) cells = line.split('\t');
-    else if (line.includes('","') || (line.startsWith('"') && line.endsWith('"'))) {
-      cells = parseCsvLine(line);
-    } else if (line.includes(',')) cells = line.split(',');
-    else cells = [line];
-    cells = cells.map(c => c.replace(/^"|"$/g, '').trim());
-    if (cells.some(c => c)) rows.push(cells);
-  }
-  return rows;
+/* ============ 后台管理 ============ */
+function renderTagBox(boxId, list, delFn) {
+  const box = document.getElementById(boxId);
+  box.innerHTML = list.length ? list.map((t, i) =>
+    '<span class="tag-chip">' + t + '<button class="chip-del" title="删除" onclick="' + delFn + '(' + i + ')">×</button></span>'
+  ).join('') : '<span style="color:var(--muted);font-size:0.8rem">暂无，下方添加</span>';
 }
-function parseCsvLine(line) {
-  const res = []; let cur = ''; let inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
-    else if (ch === ',' && !inQ) { res.push(cur); cur = ''; }
-    else cur += ch;
-  }
-  res.push(cur); return res;
-}
+function renderCatTags() { renderTagBox('catTagBox', categories, 'delOneCat'); }
+function renderCityTags() { renderTagBox('cityTagBox', cities, 'delOneCity'); }
 
-function guessField(header) {
-  const h = String(header || '').trim().toLowerCase();
-  for (const f of FIELD_MAP) {
-    if (f.aliases.some(a => a.toLowerCase() === h || h.includes(a.toLowerCase()))) return f.key;
-  }
-  return null;
+function addOneCat() {
+  const inp = document.getElementById('f_catNew');
+  const v = inp.value.trim();
+  if (!v) return;
+  if (categories.includes(v)) { showToast('该分类已存在', 'error'); return; }
+  categories.push(v); inp.value = ''; renderCatTags();
+}
+function delOneCat(i) {
+  if (categories.length <= 1) { showToast('至少保留一个分类', 'error'); return; }
+  const used = jobs.some(j => j.category === categories[i]);
+  if (used && !confirm('该分类有岗位在使用，删除后相关岗位将变为「其他」，确定删除吗？')) return;
+  const removed = categories.splice(i, 1)[0];
+  jobs.forEach(j => { if (j.category === removed) j.category = '其他'; });
+  renderCatTags();
+}
+function addOneCity() {
+  const inp = document.getElementById('f_cityNew');
+  const v = inp.value.trim();
+  if (!v) return;
+  if (cities.includes(v)) { showToast('该城市已存在', 'error'); return; }
+  cities.push(v); inp.value = ''; renderCityTags();
+}
+function delOneCity(i) {
+  const used = jobs.some(j => j.location === cities[i]);
+  if (used && !confirm('该城市有岗位在使用，删除后相关岗位城市保持不变，确定删除吗？')) return;
+  cities.splice(i, 1); renderCityTags();
 }
 
-function renderFieldMap(headers) {
-  const container = document.getElementById('fieldMapRows');
-  container.innerHTML = headers.map((h, i) => {
-    const guess = guessField(h);
-    const opts = FIELD_MAP.map(f =>
-      `<option value="${f.key}" ${guess === f.key ? 'selected' : ''}>${f.label}</option>`
-    ).join('');
-    return `<div class="field-map-row">
-      <span style="color:var(--muted);font-size:0.8rem">${h || '(第'+(i+1)+'列)'}</span>
-      <span class="arrow">→</span>
-      <select data-col="${i}"><option value="">（跳过此列）</option>${opts}</select>
-    </div>`;
-  }).join('');
-  document.getElementById('pasteFieldMap').style.display = 'block';
+function openAdminDialog() {
+  document.getElementById('f_about').value = document.getElementById('aboutDesc').textContent;
+  document.getElementById('f_applyEmail').value = applyEmail;
+  renderCatTags();
+  renderCityTags();
+  openOverlay('adminOverlay');
 }
-
-function rowsToJobs(rows, colMap) {
-  return rows.map(r => {
-    const job = { tags: [], duties: [], requirements: [], type: DEFAULT_TYPE, category: DEFAULT_CATEGORY };
-    for (let col = 0; col < colMap.length; col++) {
-      const key = colMap[col];
-      if (!key) continue;
-      const val = (r[col] || '').trim();
-      if (!val) continue;
-      if (['tags','duties','requirements'].includes(key)) job[key] = splitMulti(val);
-      else job[key] = val;
-    }
-    if (!job.category) job.category = DEFAULT_CATEGORY;
-    if (!job.type) job.type = DEFAULT_TYPE;
-    return job;
-  }).filter(j => j.title);
+function saveAdmin() {
+  if (categories.length === 0) { showToast('至少保留一个岗位分类', 'error'); return; }
+  const aboutText = document.getElementById('f_about').value;
+  saveAboutStorage(aboutText);
+  renderAbout(aboutText);
+  saveCats(categories);
+  saveCities(cities);
+  const newEmail = document.getElementById('f_applyEmail').value.trim() || DEFAULT_EMAIL;
+  applyEmail = newEmail;
+  saveEmail(newEmail);
+  updateFooterEmail();
+  renderFilterBar();
+  renderJobs();
+  closeOverlay('adminOverlay');
+  showToast('✅ 设置已保存');
 }
+function saveAboutStorage(t) { localStorage.setItem(STORAGE_ABOUT, t); }
 
-/* ---- 智能文本解析 ---- */
-function matchTextField(line) {
-  const clean = line.replace(/^[\s\u3000·\-*•●\d\.\)、]+/, '').trim();
-  for (const f of TEXT_FIELD_MAP) {
-    for (const alias of f.aliases) {
-      const re = new RegExp(alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[：:\\s]*', 'i');
-      const m = line.match(re);
-      if (m) {
-        const after = line.slice(m[0].length).trim();
-        return { key: f.key, value: after };
-      }
-    }
-  }
-  return null;
+/* ============ Dropdown ============ */
+function toggleDD(id) {
+  document.querySelectorAll('.tb-dropdown').forEach(d => { if (d.id !== id) d.classList.remove('open'); });
+  document.getElementById(id).classList.toggle('open');
 }
+function closeAllDD() { document.querySelectorAll('.tb-dropdown').forEach(d => d.classList.remove('open')); }
+document.addEventListener('click', e => { if (!e.target.closest('.tb-dropdown')) closeAllDD(); });
 
-function parseSmartText(text) {
-  const rawLines = text.replace(/\r/g, '').split('\n');
-  const jobs = [];
-  let current = null;
-  let currentKey = null;
-
-  function push() {
-    if (current && current.title) {
-      if (!current.category) current.category = DEFAULT_CATEGORY;
-      if (!current.type) current.type = DEFAULT_TYPE;
-      jobs.push(current);
-    }
-  }
-
-  for (let i = 0; i < rawLines.length; i++) {
-    const rawLine = rawLines[i];
-    const line = rawLine.trim();
+/* ============ 导入解析 ============ */
+function findAliasLine(text, aliases) {
+  const lines = text.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
     if (!line) continue;
-
-    if (/^[=\-_*#~]{2,}$/.test(line) || line === '---') {
-      push();
-      current = null;
-      currentKey = null;
-      continue;
-    }
-
-    const matched = matchTextField(line);
-
-    if (matched) {
-      if (matched.key === 'title') {
-        push();
-        current = {
-          title: matched.value || '',
-          category: '', salary: '', location: '', type: '', desc: '',
-          tags: [], duties: [], requirements: []
-        };
-        currentKey = null;
-      } else {
-        if (!current) {
-          current = { title: '', category: '', salary: '', location: '', type: '', desc: '', tags: [], duties: [], requirements: [] };
-        }
-        const v = matched.value;
-        const listKeys = ['duties', 'requirements', 'tags'];
-        if (listKeys.includes(matched.key)) {
-          current[matched.key] = v ? [v] : [];
-        } else {
-          current[matched.key] = v;
-        }
-        currentKey = matched.key;
-      }
-    } else if (current) {
-      if (currentKey === 'duties' || currentKey === 'requirements' || currentKey === 'tags') {
-        const cleaned = line.replace(/^[\d\.\)、•●\-\*]+/, '').trim();
-        if (cleaned) current[currentKey].push(cleaned);
-      } else if (currentKey && ['desc'].includes(currentKey)) {
-        current[currentKey] += (current[currentKey] ? '\n' : '') + line;
-      } else if (!current.title) {
-        current.title = line;
-      } else {
-        const allText = [current.desc, current.duties.join('；'), current.requirements.join('；')].filter(Boolean).join(' ');
-        if (line.length < 40 && allText.length < 30) {
-          if (!current.desc) current.desc = line;
-        } else {
-          if (!current.desc) current.desc = line;
-        }
+    for (const alias of aliases) {
+      if (line.toLowerCase().startsWith(alias.toLowerCase() + ':') ||
+          line.toLowerCase().startsWith(alias.toLowerCase() + '：') ||
+          line.toLowerCase() === alias.toLowerCase()) {
+        const idx = line.indexOf(':');
+        const idx2 = line.indexOf('：');
+        const sep = idx !== -1 && idx2 !== -1 ? Math.min(idx, idx2) : (idx !== -1 ? idx : idx2);
+        const val = sep !== -1 ? line.substring(sep + 1).trim() : '';
+        return { lineIdx: i, value: val, alias };
       }
     }
   }
-  push();
-  return jobs;
+  return null;
 }
-
-function isTableLike(text) {
-  const lines = text.split('\n').filter(l => l.trim());
-  if (!lines.length) return false;
-  const tabCount = lines.filter(l => l.includes('\t')).length;
-  const commaCount = lines.filter(l => l.includes(',')).length;
-  if (tabCount >= Math.min(2, lines.length)) return true;
-  if (commaCount >= Math.min(2, lines.length) && lines[0].includes(',')) return true;
-  const smart = parseSmartText(text);
-  if (smart.length >= 2) return false;
-  return false;
-}
-
-function buildColMapFromFieldMap() {
-  const selects = document.querySelectorAll('#fieldMapRows select');
-  const maxCol = Math.max(...Array.from(selects).map(s => parseInt(s.dataset.col)), 0);
-  const map = new Array(maxCol + 1).fill('');
-  selects.forEach(s => { map[parseInt(s.dataset.col)] = s.value; });
-  return map;
-}
-
-function showPreview(jobsList, extraInfo) {
-  if (!jobsList.length) {
-    document.getElementById('pastePreview').innerHTML = '';
-    return;
+function extractTextSection(text, aliases) {
+  const lines = text.split(/\r?\n/);
+  const startInfo = findAliasLine(text, aliases);
+  if (!startInfo) return { value: '', consumeUpTo: -1 };
+  let startIdx = startInfo.lineIdx;
+  let value = startInfo.value;
+  let consumeUpTo = startIdx;
+  if (!value) {
+    let buf = [];
+    for (let i = startIdx + 1; i < lines.length; i++) {
+      const l = lines[i].trim();
+      if (!l) { buf.push(''); continue; }
+      if (/^[\u4e00-\u9fa5A-Za-z]+[：:]$/.test(l)) { consumeUpTo = i - 1; break; }
+      buf.push(l);
+      consumeUpTo = i;
+    }
+    value = buf.join('\n').trim();
   }
+  return { value, consumeUpTo };
+}
+function parseSingleJobText(text) {
+  const result = {};
+  const fc = JOB_PARSER_CONFIG.fieldAliases;
+  const titleInfo = findAliasLine(text, fc.title);
+  result.title = titleInfo ? titleInfo.value : (text.split(/\r?\n/).find(l => l.trim()) || '').trim();
+  const catInfo = findAliasLine(text, fc.category);
+  let cat = catInfo ? catInfo.value : '';
+  if (cat) {
+    const matched = JOB_PARSER_CONFIG.categoryEnums.find(c => cat.includes(c));
+    if (matched) cat = matched;
+  }
+  result.category = cat || '其他';
+  result.salary = (findAliasLine(text, fc.salary) || {}).value || '';
+  let loc = (findAliasLine(text, fc.location) || {}).value || '';
+  const city = JOB_PARSER_CONFIG.cities.find(c => loc.includes(c));
+  if (city) loc = city;
+  result.location = loc || '';
+  let tp = (findAliasLine(text, fc.type) || {}).value || '';
+  const matchedType = JOB_PARSER_CONFIG.typeEnums.find(t => tp.toLowerCase().includes(t.toLowerCase()));
+  result.type = matchedType || '全职';
+  const tagsRaw = (findAliasLine(text, fc.tags) || {}).value || '';
+  result.tags = splitMulti(tagsRaw.replace(/[、,，]/g, ';'));
+  const desc = extractTextSection(text, fc.desc);
+  result.desc = desc.value || '';
+  const duties = extractTextSection(text, fc.duties);
+  result.duties = duties.value ? duties.value.split('\n').map(s => s.replace(/^\d+[\.、\)]\s*/, '').trim()).filter(Boolean) : [];
+  const reqs = extractTextSection(text, fc.requirements);
+  result.requirements = reqs.value ? reqs.value.split('\n').map(s => s.replace(/^\d+[\.、\)]\s*/, '').trim()).filter(Boolean) : [];
+  return result;
+}
+
+function isTableText(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return false;
+  const firstLine = lines[0].trim();
+  const colons = (firstLine.match(/[：:]/g) || []).length;
+  const tabs = lines[0].split('\t').length;
+  const spaces = lines[0].split(/\s{2,}/).length;
+  return tabs > 1 || spaces > 1 || (colons >= 3 && lines.length >= 3);
+}
+
+function parseTableText(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2) return null;
+  const headers = lines[0].split('\t').map(s => s.trim()).filter(Boolean);
+  if (headers.length < 2) return null;
+  const keyMap = {};
+  const fc = JOB_PARSER_CONFIG.fieldAliases;
+  for (let i = 0; i < headers.length; i++) {
+    const h = headers[i];
+    for (const [key, aliases] of Object.entries(fc)) {
+      if (aliases.some(a => h.includes(a) || a.includes(h))) { keyMap[i] = key; break; }
+    }
+  }
+  const results = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split('\t').map(s => s.trim());
+    const obj = {};
+    for (const [colIdx, key] of Object.entries(keyMap)) {
+      obj[key] = cols[parseInt(colIdx)] || '';
+    }
+    obj.title = obj.title || '';
+    if (obj.title) {
+      obj.category = obj.category || '其他';
+      obj.type = obj.type || '全职';
+      obj.tags = splitMulti((obj.tags || '').replace(/[、,，]/g, ';'));
+      obj.duties = splitMulti(obj.duties);
+      obj.requirements = splitMulti(obj.requirements);
+      results.push(obj);
+    }
+  }
+  return results.length ? results : null;
+}
+
+function openImportDialog() { openOverlay('importOverlay'); }
+function closeImportDialog() {
+  pendingImportJobs = null;
+  document.getElementById('fileImportBtn').style.display = 'none';
+  document.getElementById('filePreview').innerHTML = '';
+  document.getElementById('importResult').classList.remove('show');
+  closeOverlay('importOverlay');
+}
+
+function renderImportPreview(jobs) {
+  const cont = document.getElementById('filePreview');
+  if (!cont) return;
   const headers = ['岗位名称','分类','薪资','地点','类型','标签'];
-  const rows = jobsList.slice(0, 5);
-  const html = `
-    <div style="font-size:0.85rem;color:var(--muted);margin-top:14px;margin-bottom:6px">
-      共解析到 <b style="color:var(--accent)">${jobsList.length}</b> 个有效岗位${extraInfo ? '，'+extraInfo : ''}，预览前 5 行：
-    </div>
-    <table class="preview-table">
-      <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
-      <tbody>
-        ${rows.map(j => `<tr>
-          <td>${j.title||''}</td><td>${j.category||''}</td><td>${j.salary||''}</td>
-          <td>${j.location||''}</td><td>${j.type||''}</td>
-          <td>${(j.tags||[]).slice(0,3).join(', ')}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
-    ${jobsList.length > 5 ? `<div class="preview-trunc">...还有 ${jobsList.length - 5} 条未显示</div>` : ''}
-  `;
-  document.getElementById('pastePreview').innerHTML = html;
+  cont.innerHTML = '<div style="margin-top:14px;font-weight:600;font-size:0.88rem;margin-bottom:8px">📋 解析预览（可点击表格单元格直接编辑）</div>' +
+    '<div style="overflow-x:auto"><table class="preview-table"><thead><tr>' +
+    headers.map(h => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>' +
+    jobs.map((j, idx) => '<tr>' +
+      headers.map(h => {
+        const keyMap = {'岗位名称':'title','分类':'category','薪资':'salary','地点':'location','类型':'type','标签':'tags'};
+        const key = keyMap[h];
+        let val = j[key] || '';
+        if (key === 'tags') val = Array.isArray(val) ? val.join(',') : val;
+        return '<td contenteditable="true" class="edit-cell" data-row="' + idx + '" data-key="' + key + '" style="max-width:120px;cursor:text">' + val + '</td>';
+      }).join('') + '</tr>').join('') +
+    '</tbody></table></div>';
+  cont.querySelectorAll('.edit-cell').forEach(cell => {
+    cell.addEventListener('blur', () => {
+      const r = parseInt(cell.dataset.row), k = cell.dataset.key;
+      let val = cell.textContent.trim();
+      if (k === 'tags') pendingImportJobs[r][k] = val.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+      else pendingImportJobs[r][k] = val;
+    });
+  });
 }
 
-function parsePaste() {
-  const text = document.getElementById('pasteInput').value;
-  if (!text || !text.trim()) { showToast('请先粘贴数据', 'error'); return; }
-
-  document.getElementById('pasteFieldMap').style.display = 'none';
-  document.getElementById('pastePreview').innerHTML = '';
-
-  let jobsList = [];
-
-  if (isTableLike(text)) {
-    const rows = parsePastedText(text);
-    if (rows.length < 1) { showToast('未能解析出任何数据', 'error'); return; }
-    const hasHeader = rows[0].some(cell => guessField(cell));
-    let headers, dataRows;
-    if (hasHeader) { headers = rows[0]; dataRows = rows.slice(1); }
-    else { headers = rows[0].map((_, i) => `第${i+1}列`); dataRows = rows; }
-
-    renderFieldMap(headers);
-    let colMap = headers.map(h => guessField(h));
-    const hasAny = colMap.some(Boolean);
-    if (!hasAny && !hasHeader) {
-      if (!confirm('未识别到表头，第一行会被当作数据处理。是否继续？')) return;
-      colMap = FIELD_MAP.slice(0, headers.length).map(f => f ? f.key : '');
-    }
-    jobsList = rowsToJobs(dataRows, colMap);
-    pendingImportJobs = jobsList;
-    showPreview(jobsList);
-    showToast(`🔍 表格格式解析完成，共 ${jobsList.length} 个有效岗位`);
-  } else {
-    jobsList = parseSmartText(text);
-    if (!jobsList.length) { showToast('未能识别出任何岗位，请确保文本里包含"岗位名称"等关键字', 'error'); return; }
-    pendingImportJobs = jobsList;
-    showPreview(jobsList);
-    showToast(`🔍 文本格式解析完成，共 ${jobsList.length} 个有效岗位`);
+function confirmImport() {
+  if (!pendingImportJobs || !pendingImportJobs.length) { showToast('请先选择文件', 'error'); return; }
+  let ok = 0, fail = 0;
+  for (const j of pendingImportJobs) {
+    if (j.title && j.category) {
+      j.tags = Array.isArray(j.tags) ? j.tags : splitMulti((j.tags || '').replace(/[、,，]/g, ';'));
+      j.duties = Array.isArray(j.duties) ? j.duties : splitMulti(j.duties);
+      j.requirements = Array.isArray(j.requirements) ? j.requirements : splitMulti(j.requirements);
+      j.salary = j.salary || '面议';
+      j.location = j.location || '待定';
+      j.type = j.type || '全职';
+      j.recruitType = j.recruitType || '社招';
+      j.desc = j.desc || '暂无描述';
+      jobs.push(j);
+      if (!categories.includes(j.category)) { categories.push(j.category); saveCats(categories); }
+      ok++;
+    } else { fail++; }
   }
+  saveJobs();
+  renderFilterBar();
+  renderJobs();
+  pendingImportJobs = null;
+  closeImportDialog();
+  showToast('✅ 成功导入 ' + ok + ' 个岗位' + (fail ? '，失败 ' + fail + ' 个' : ''));
 }
 
-function loadTextExample(kind) {
-  if (kind === 'structured') {
-    document.getElementById('pasteInput').value = `岗位名称：高级前端工程师
-分类：技术研发
-薪资：25K - 40K · 14薪
-工作地点：上海
-工作类型：全职
-技能标签：React、TypeScript、3年以上
-
-岗位描述：
-负责公司核心产品的前端架构设计与开发，推动前端工程化落地。
-
-岗位职责：
-1. 负责 Web 端产品的前端架构设计和核心功能开发
-2. 搭建团队前端组件库与工程化体系
-3. 与后端工程师协作完成接口联调
-4. 跟进前端技术趋势，推动技术升级
-
-任职要求：
-1. 计算机相关专业，本科及以上学历
-2. 3年以上前端开发经验，精通 HTML/CSS/JavaScript
-3. 熟悉 React 或 Vue 框架，有大型项目经验
-4. 具备良好的沟通能力和团队协作精神
-
----
-岗位名称：资深产品经理
-分类：产品
-薪资：30K - 50K · 14薪
-工作地点：北京
-工作类型：全职
-技能标签：B端产品、SaaS、5年以上
-
-岗位描述：
-主导企业级 SaaS 产品的规划与设计，深入理解客户需求。
-
-岗位职责：
-• 负责产品战略规划、需求分析与迭代
-• 撰写 PRD 文档，与设计、研发团队紧密协作
-• 跟踪产品数据，持续优化产品体验
-
-任职要求：
-• 5年以上产品经理经验，有 B 端/SaaS 产品经验优先
-• 具备扎实的产品方法论和结构化思维
-• 优秀的沟通表达和项目推动能力`;
-  } else {
-    document.getElementById('pasteInput').value = `岗位名称	分类	薪资	地点	类型	标签	描述	职责	要求
-UI/UX设计师	设计	18K-30K·13薪	深圳	全职	Figma;交互设计	负责产品界面设计与交互体验优化	界面视觉设计;交互设计;制定设计规范	3年以上设计经验;精通Figma;良好审美
-后端开发工程师（Java）	技术研发	22K-35K·14薪	杭州	全职	Java;Spring;微服务	负责后端服务架构设计与核心模块开发	架构设计;核心功能开发;性能优化	3年以上Java开发;熟悉Spring全家桶;了解微服务`;
-  }
-  showToast('✅ 示例已加载，点击「🔍 解析预览」即可查看效果');
-}
-
-/* ---- 文件上传 ---- */
+/* ============ 文件上传 ============ */
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
-
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
@@ -1010,159 +1205,123 @@ dropZone.addEventListener('drop', e => {
   e.preventDefault(); dropZone.classList.remove('drag');
   if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
 });
-fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
-
-function handleFile(file) {
-  const ext = file.name.split('.').pop().toLowerCase();
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+function handleFile(f) {
   const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      let jobsList;
-      if (ext === 'json') {
-        const data = JSON.parse(ev.target.result);
-        if (!Array.isArray(data)) throw new Error('JSON 必须是数组');
-        jobsList = normalizeJobs(data);
-      } else if (ext === 'csv') {
-        const text = ev.target.result;
-        const rows = parsePastedText(text);
-        if (rows.length < 1) throw new Error('CSV 为空');
-        const headers = rows[0];
-        const dataRows = rows.slice(1);
-        const colMap = headers.map(h => guessField(h));
-        jobsList = rowsToJobs(dataRows, colMap);
-      } else {
-        throw new Error('仅支持 .csv 或 .json 文件');
-      }
-      pendingImportJobs = jobsList;
-      const headers = ['岗位名称','分类','薪资','地点','类型'];
-      const preview = jobsList.slice(0, 5);
-      document.getElementById('filePreview').innerHTML = `
-        <div style="margin-top:18px">
-          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:8px">
-            📄 已读取 <b style="color:var(--accent)">${file.name}</b>，共 <b style="color:var(--accent)">${jobsList.length}</b> 个有效岗位，预览：
-          </div>
-          <table class="preview-table">
-            <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
-            <tbody>${preview.map(j => `<tr>
-              <td>${j.title||''}</td><td>${j.category||''}</td><td>${j.salary||''}</td>
-              <td>${j.location||''}</td><td>${j.type||''}</td>
-            </tr>`).join('')}</tbody>
-          </table>
-          ${jobsList.length > 5 ? `<div class="preview-trunc">...还有 ${jobsList.length - 5} 条</div>` : ''}
-        </div>
-      `;
-      document.getElementById('fileImportBtn').style.display = 'inline-block';
-    } catch (err) {
-      showImportResult(false, '❌ 读取失败：' + err.message);
+  reader.onload = e => {
+    let data = null;
+    if (f.name.endsWith('.json')) {
+      try { data = JSON.parse(e.target.result); } catch { showToast('JSON 格式错误', 'error'); return; }
+    } else {
+      data = parseCsv(e.target.result);
     }
+    if (data && data.length) {
+      pendingImportJobs = data;
+      renderImportPreview(data);
+      document.getElementById('fileImportBtn').style.display = '';
+      document.getElementById('importResult').classList.add('show');
+      document.getElementById('importResult').className = 'import-result show ok';
+      document.getElementById('importResult').textContent = '已解析 ' + data.length + ' 条记录';
+    } else { showToast('无法解析文件', 'error'); }
   };
-  reader.onerror = () => showImportResult(false, '❌ 文件读取错误');
-  reader.readAsText(file, 'UTF-8');
+  reader.readAsText(f, 'UTF-8');
 }
-
-function normalizeJobs(list) {
-  return list.map(raw => ({
-    title: (raw.title || raw.岗位名称 || '').trim(),
-    category: (raw.category || raw.分类 || DEFAULT_CATEGORY).trim() || DEFAULT_CATEGORY,
-    salary: (raw.salary || raw.薪资 || '').trim(),
-    location: (raw.location || raw.地点 || '').trim(),
-    type: (raw.type || raw.类型 || DEFAULT_TYPE).trim() || DEFAULT_TYPE,
-    tags: Array.isArray(raw.tags) ? raw.tags : splitMulti(raw.tags || raw.标签 || ''),
-    desc: (raw.desc || raw.描述 || raw.description || '').trim(),
-    duties: Array.isArray(raw.duties) ? raw.duties : splitMulti(raw.duties || raw.职责 || ''),
-    requirements: Array.isArray(raw.requirements) ? raw.requirements : splitMulti(raw.requirements || raw.要求 || '')
-  })).filter(j => j.title);
-}
-
-/* ---- 确认导入 ---- */
-function confirmImport() {
-  if (!pendingImportJobs || !pendingImportJobs.length) {
-    showToast('没有可导入的数据', 'error'); return;
-  }
-  const action = confirm(`检测到 ${pendingImportJobs.length} 个岗位。\n\n点"确定" → 合并到现有数据（重复的岗位名称会被覆盖）\n点"取消" → 替换现有全部数据`);
-  if (action === true) {
-    const existingTitles = new Set(jobs.map(j => j.title));
-    let added = 0, updated = 0;
-    for (const nj of pendingImportJobs) {
-      const idx = jobs.findIndex(j => j.title === nj.title);
-      if (idx >= 0) { jobs[idx] = nj; updated++; }
-      else { jobs.push(nj); added++; }
+function parseCsv(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2) return null;
+  const splitLine = l => {
+    const out = [], cur = [], inQ = [false];
+    for (const c of l) {
+      if (c === '"') inQ[0] = !inQ[0];
+      else if (c === ',' && !inQ[0]) { out.push(cur.join('').trim()); cur.length = 0; }
+      else cur.push(c);
     }
-    saveJobs(); renderJobs();
-    showImportResult(true, `✅ 导入完成！新增 ${added} 个，更新 ${updated} 个，当前共 ${jobs.length} 个岗位`);
-    showToast('✅ 导入成功');
-  } else if (action === false) {
-    if (!confirm('⚠️ 现有所有岗位将被清空，确认替换？')) return;
-    jobs = pendingImportJobs.slice();
-    saveJobs(); renderJobs();
-    showImportResult(true, `✅ 已替换，当前共 ${jobs.length} 个岗位`);
-    showToast('✅ 导入成功');
+    out.push(cur.join('').trim()); return out;
+  };
+  const headers = splitLine(lines[0]);
+  const keyMap = {};
+  const fc = JOB_PARSER_CONFIG.fieldAliases;
+  for (let i = 0; i < headers.length; i++) {
+    for (const [k, aliases] of Object.entries(fc)) { if (aliases.some(a => headers[i].includes(a) || a.includes(headers[i]))) { keyMap[i] = k; break; } }
   }
+  const results = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = splitLine(lines[i]);
+    const obj = {};
+    for (const [idx, k] of Object.entries(keyMap)) {
+      let v = cols[parseInt(idx)] || '';
+      if (['duties','requirements'].includes(k)) obj[k] = splitMulti(v);
+      else if (k === 'tags') obj[k] = splitMulti(v.replace(/,/g, ';'));
+      else obj[k] = v;
+    }
+    obj.tags = obj.tags || []; obj.duties = obj.duties || []; obj.requirements = obj.requirements || [];
+    obj.category = obj.category || '其他'; obj.type = obj.type || '全职'; obj.recruitType = obj.recruitType || '社招';
+    results.push(obj);
+  }
+  return results;
 }
 
-function showImportResult(ok, msg) {
-  const el = document.getElementById('importResult');
-  el.className = 'import-result show ' + (ok ? 'ok' : 'err');
-  el.textContent = msg;
-}
-
-/* ---------- 模板下载 ---------- */
-function openTemplateDialog() { switchImportTab('template'); openOverlay('importOverlay'); }
-
-function downloadTemplate() {
-  const headers = ['岗位名称','分类','薪资','地点','类型','标签','岗位描述','工作职责','任职要求'];
-  const sample = [
-    ['高级前端工程师','技术研发','25K - 40K · 14薪','上海','全职','React;TypeScript','负责Web端产品的前端架构设计','开发核心功能;优化性能','本科;3年以上经验'],
-    ['资深产品经理','产品','30K - 50K · 14薪','北京','全职','B端;SaaS','主导产品规划与设计','需求分析;撰写PRD','5年以上产品经验']
-  ];
-  const csv = [headers, ...sample].map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-  const bom = '\uFEFF';
-  const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = '招聘岗位模板.csv';
-  a.click(); URL.revokeObjectURL(url);
-  showToast('📄 模板已下载，用 Excel 打开即可填写');
-}
-
-/* ---------- 导出 ---------- */
-function exportFile(format) {
-  if (!jobs.length) { showToast('当前没有数据可导出', 'error'); return; }
-  if (format === 'json') {
-    const blob = new Blob([JSON.stringify(jobs, null, 2)], { type: 'application/json' });
-    triggerDownload(blob, `careers-${today()}.json`);
-    showToast('📤 JSON 备份已导出');
+/* ============ 导出 ============ */
+function exportFile(type) {
+  if (type === 'json') {
+    downloadBlob(JSON.stringify(jobs, null, 2), 'wanwu_jobs_backup.json', 'application/json');
+    showToast('✅ 已导出 JSON');
   } else {
-    const headers = ['岗位名称','分类','薪资','地点','类型','标签','岗位描述','工作职责','任职要求'];
-    const rows = jobs.map(j => [
-      j.title, j.category, j.salary, j.location, j.type,
-      joinMulti(j.tags), j.desc, joinMulti(j.duties), joinMulti(j.requirements)
-    ]);
-    const csv = [headers, ...rows].map(r => r.map(c => `"${String(c||'').replace(/"/g, '""')}"`).join(',')).join('\n');
-    const bom = '\uFEFF';
-    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
-    triggerDownload(blob, `careers-${today()}.csv`);
-    showToast('📊 CSV 已导出，Excel 可直接打开');
+    const h = '岗位名称,分类,薪资,地点,招聘类型,工作类型,标签,描述,职责,要求\n';
+    const rows = jobs.map(j =>
+      [j.title, j.category, j.salary, j.location, j.recruitType || '社招', j.type,
+       (j.tags||[]).join(';'), j.desc || '',
+       (j.duties||[]).join(';'), (j.requirements||[]).join(';')]
+        .map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')
+    ).join('\n');
+    downloadBlob(h + rows, 'wanwu_jobs.csv', 'text/csv;charset=utf-8');
+    showToast('✅ 已导出 CSV');
   }
 }
-function triggerDownload(blob, name) {
+function downloadBlob(data, name, mime) {
+  const blob = new Blob(['\uFEFF' + data], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = name; a.click();
   URL.revokeObjectURL(url);
 }
-function today() { return new Date().toISOString().slice(0,10); }
 
-/* ---------- 恢复示例 ---------- */
-document.getElementById('btnReset').addEventListener('click', () => {
-  if (!confirm('确认恢复为示例数据？当前所有修改将会丢失！')) return;
-  jobs = JSON.parse(JSON.stringify(DEFAULT_JOBS));
-  saveJobs(); renderJobs(); showToast('🔄 已恢复示例数据');
+/* ============ 初始化 ============ */
+document.addEventListener('DOMContentLoaded', () => {
+  const ys = document.getElementById('yearSpan');
+  if (ys) ys.textContent = new Date().getFullYear();
+
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = 'none';
+  });
+
+  loadAll();
+  renderFilterBar();
+  renderJobs();
+
+  const catNew = document.getElementById('f_catNew');
+  if (catNew) catNew.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addOneCat(); } });
+  const cityNew = document.getElementById('f_cityNew');
+  if (cityNew) cityNew.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addOneCity(); } });
+
+  // Logo 双击触发登录
+  const logo = document.getElementById('brandLogo');
+  logo.addEventListener('click', e => {
+    e.stopPropagation();
+    if (isAdmin()) return;
+    brandLogoClickCount++;
+    clearTimeout(brandLogoClickTimer);
+    brandLogoClickTimer = setTimeout(() => { brandLogoClickCount = 0; }, 1500);
+    if (brandLogoClickCount >= 2) {
+      brandLogoClickCount = 0;
+      openPwdDialog();
+    }
+  });
+
+  if (new URLSearchParams(location.search).get('admin') === '1' && !isAdmin()) openPwdDialog();
+
+  if (isAdmin()) enterAdminMode();
 });
-
-/* ---------- 启动 ---------- */
-loadJobs();
-renderJobs();
 </script>
 </body>
 </html>
