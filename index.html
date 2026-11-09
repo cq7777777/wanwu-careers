@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人才招聘 · 我们在找你</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #fafafa;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+    --accent: #2563eb;
+    --accent-dark: #1d4ed8;
+    --accent-bg: #eff6ff;
+    --border: #e5e5e5;
+    --tag-bg: #f3f4f6;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --radius: 12px;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .top-bar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
+  }
+  .tb-btn {
+    padding: 7px 16px; border: 1px solid var(--border); background: var(--card);
+    border-radius: 8px; font-size: 0.85rem; cursor: pointer; color: var(--text); transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 4px; font-family: inherit;
+  }
+  .tb-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tb-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tb-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  .tb-dropdown { position: relative; display: inline-block; }
+  .tb-menu {
+    display: none; position: absolute; top: calc(100% + 6px); right: 0;
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    min-width: 200px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    padding: 6px; z-index: 200;
+  }
+  .tb-dropdown.open .tb-menu { display: block; }
+  .tb-menu button {
+    display: block; width: 100%; text-align: left;
+    padding: 9px 14px; border: none; background: transparent; border-radius: 6px;
+    font-size: 0.88rem; cursor: pointer; color: var(--text); font-family: inherit;
+  }
+  .tb-menu button:hover { background: var(--accent-bg); color: var(--accent); }
+  .tb-menu .sep { height: 1px; background: var(--border); margin: 6px 4px; }
+
+  .hero { text-align: center; padding: 60px 24px 40px; background: linear-gradient(180deg, #fff 0%, var(--bg) 100%); }
+  .hero h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 12px; }
+  .hero p { color: var(--muted); font-size: 1.05rem; max-width: 540px; margin: 0 auto; }
+
+  .filter-bar {
+    max-width: 880px; margin: 0 auto 32px; padding: 0 24px;
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: center;
+  }
+  .filter-bar button {
+    padding: 8px 18px; border: 1px solid var(--border); background: var(--card);
+    border-radius: 999px; font-size: 0.9rem; cursor: pointer; color: var(--text); transition: all 0.2s;
+  }
+  .filter-bar button:hover { border-color: var(--accent); }
+  .filter-bar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .jobs { max-width: 880px; margin: 0 auto 60px; padding: 0 24px; display: flex; flex-direction: column; gap: 16px; }
+  .job-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 28px; cursor: pointer; transition: all 0.25s ease; position: relative;
+  }
+  .job-card:hover { border-color: var(--accent); box-shadow: 0 4px 24px rgba(37,99,235,0.08); transform: translateY(-2px); }
+  .job-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
+  .job-title { font-size: 1.25rem; font-weight: 600; }
+  .job-salary { color: var(--accent); font-weight: 600; font-size: 1rem; white-space: nowrap; }
+  .job-meta { display: flex; gap: 18px; color: var(--muted); font-size: 0.9rem; margin-bottom: 14px; flex-wrap: wrap; }
+  .job-meta span::before { content: "·"; margin-right: 4px; }
+  .job-meta span:first-child::before { content: ""; margin: 0; }
+  .job-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tag { background: var(--tag-bg); color: var(--muted); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; }
+
+  .edit-bar { position: absolute; top: 12px; right: 12px; display: none; gap: 6px; z-index: 2; }
+  body.edit-mode .edit-bar { display: flex; }
+  .edit-bar button {
+    padding: 5px 12px; font-size: 0.8rem; border: 1px solid var(--border); background: #fff;
+    border-radius: 6px; cursor: pointer; color: var(--muted); transition: all 0.2s;
+  }
+  .edit-bar .btn-edit:hover { border-color: var(--accent); color: var(--accent); }
+  .edit-bar .btn-del:hover { border-color: var(--danger); color: var(--danger); }
+  body.edit-mode .job-card { cursor: default; }
+  body.edit-mode .job-card:hover { transform: none; box-shadow: none; }
+
+  .add-card { max-width: 880px; margin: 0 auto 60px; padding: 0 24px; display: none; }
+  body.edit-mode .add-card { display: block; }
+  .add-card button {
+    width: 100%; padding: 20px; border: 2px dashed var(--border); background: transparent;
+    border-radius: var(--radius); color: var(--muted); font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+  }
+  .add-card button:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+
+  .overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100;
+    padding: 24px; justify-content: center; align-items: flex-start; overflow-y: auto;
+  }
+  .overlay.show { display: flex; }
+  .panel {
+    background: var(--card); border-radius: var(--radius); max-width: 680px; width: 100%;
+    padding: 40px; margin: 40px auto; position: relative; animation: slideUp 0.25s ease;
+  }
+  .panel-wide { max-width: 760px; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .close-btn { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); }
+  .close-btn:hover { color: var(--text); }
+
+  .panel h2 { font-size: 1.4rem; margin-bottom: 4px; }
+  .panel .sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
+
+  .detail-panel h2 { margin-bottom: 8px; }
+  .detail-panel .job-salary { display: inline-block; margin-bottom: 20px; }
+  .detail-panel section { margin-bottom: 24px; }
+  .detail-panel h3 { font-size: 0.95rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; font-weight: 600; }
+  .detail-panel ul { padding-left: 20px; color: var(--text); }
+  .detail-panel li { margin-bottom: 6px; }
+  .apply-btn {
+    display: block; width: 100%; padding: 14px; background: var(--accent); color: #fff;
+    border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;
+    margin-top: 16px; transition: opacity 0.2s;
+  }
+  .apply-btn:hover { opacity: 0.9; }
+  .empty { text-align: center; padding: 60px; color: var(--muted); }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 22px; }
+  .tabs button {
+    padding: 10px 20px; border: none; background: transparent; cursor: pointer;
+    font-size: 0.9rem; color: var(--muted); border-bottom: 2px solid transparent; font-family: inherit; font-weight: 500;
+  }
+  .tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.95rem; font-family: inherit; background: #fff; transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+  .btn-save, .btn-cancel {
+    padding: 10px 22px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none;
+  }
+  .btn-save { background: var(--accent); color: #fff; }
+  .btn-save:hover { background: var(--accent-dark); }
+  .btn-cancel { background: var(--tag-bg); color: var(--text); }
+  .btn-cancel:hover { background: var(--border); }
+  .form-hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+  .paste-area {
+    width: 100%; min-height: 240px; padding: 14px;
+    border: 1px solid var(--border); border-radius: 8px; font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.85rem; background: #fafafa; resize: vertical; line-height: 1.7;
+  }
+  .paste-area:focus { outline: none; border-color: var(--accent); background: #fff; }
+
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius); padding: 36px 20px;
+    text-align: center; cursor: pointer; transition: all 0.2s; background: #fafafa;
+  }
+  .drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: var(--accent-bg); }
+  .drop-zone .icon { font-size: 2.5rem; margin-bottom: 10px; }
+  .drop-zone .tip { color: var(--muted); font-size: 0.88rem; }
+  .drop-zone .file-hint { margin-top: 10px; font-size: 0.82rem; color: var(--muted); }
+
+  .field-map { background: #fafafa; border-radius: 8px; padding: 16px; margin-bottom: 18px; }
+  .field-map-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+  .field-map-row { display: grid; grid-template-columns: 140px 16px 1fr; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.85rem; }
+  .field-map-row .arrow { color: var(--muted); text-align: center; }
+  .field-map-row select { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; font-family: inherit; background: #fff; }
+
+  .preview-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.82rem; }
+  .preview-table th, .preview-table td { padding: 6px 10px; border: 1px solid var(--border); text-align: left; }
+  .preview-table th { background: var(--tag-bg); font-weight: 600; }
+  .preview-trunc { text-align: center; color: var(--muted); padding: 8px; font-size: 0.82rem; }
+
+  .import-result { padding: 14px; border-radius: 8px; margin-top: 14px; font-size: 0.9rem; display: none; }
+  .import-result.show { display: block; }
+  .import-result.ok { background: #f0fdf4; color: #15803d; }
+  .import-result.err { background: #fef2f2; color: var(--danger); }
+
+  .template-box {
+    background: var(--accent-bg); border-radius: var(--radius); padding: 22px; text-align: center;
+  }
+  .template-box .icon { font-size: 2rem; margin-bottom: 8px; }
+  .template-box p { color: var(--muted); font-size: 0.88rem; margin-bottom: 14px; }
+  .template-box .btn {
+    display: inline-block; padding: 10px 24px; background: var(--accent); color: #fff; border: none;
+    border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .template-box .btn:hover { background: var(--accent-dark); }
+
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
+    background: var(--text); color: #fff; padding: 12px 24px; border-radius: 8px;
+    font-size: 0.9rem; z-index: 9999; opacity: 0; transition: all 0.3s ease; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+
+  @media (max-width: 600px) {
+    .hero { padding: 40px 20px 30px; }
+    .hero h1 { font-size: 1.8rem; }
+    .job-card { padding: 20px; }
+    .panel { padding: 28px 22px; margin: 20px auto; }
+    .form-row { grid-template-columns: 1fr; }
+    .field-map-row { grid-template-columns: 1fr; }
+    .field-map-row .arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="tb-btn" id="btnEdit">✏️ 编辑模式</button>
+
+  <div class="tb-dropdown" id="ddImport">
+    <button class="tb-btn" onclick="toggleDD('ddImport')">📥 导入 ▾</button>
+    <div class="tb-menu">
+      <button onclick="closeAllDD();openImportDialog('paste')">📋 从 Word/Excel 粘贴</button>
+      <button onclick="closeAllDD();openImportDialog('file')">📂 上传 CSV / JSON 文件</button>
+      <div class="sep"></div>
+      <button onclick="closeAllDD();openTemplateDialog()">📄 下载 Excel 模板</button>
+    </div>
+  </div>
+
+  <div class="tb-dropdown" id="ddExport">
+    <button class="tb-btn" onclick="toggleDD('ddExport')">📤 导出 ▾</button>
+    <div class="tb-menu">
+      <button onclick="closeAllDD();exportFile('csv')">📊 导出为 Excel 可打开的 CSV</button>
+      <button onclick="closeAllDD();exportFile('json')">💾 导出为 JSON 备份</button>
+    </div>
+  </div>
+
+  <button class="tb-btn danger" id="btnReset">🔄 恢复示例</button>
+</div>
+
+<section class="hero">
+  <h1>加入我们</h1>
+  <p>和一群优秀的人，一起做一件有意义的事。我们正在寻找各领域的专业伙伴。</p>
+</section>
+
+<div class="filter-bar" id="filterBar">
+  <button class="active" data-filter="all">全部</button>
+  <button data-filter="技术研发">技术研发</button>
+  <button data-filter="产品">产品</button>
+  <button data-filter="设计">设计</button>
+  <button data-filter="零售">零售</button>
+  <button data-filter="运营">运营</button>
+  <button data-filter="人力/行政/财务">人力/行政/财务</button>
+  <button data-filter="其他">其他</button>
+</div>
+
+<div class="jobs" id="jobList"></div>
+
+<div class="add-card" id="addCard">
+  <button onclick="openForm()">+ 添加新岗位</button>
+</div>
+
+<!-- 岗位详情 -->
+<div class="overlay" id="detailOverlay">
+  <div class="panel detail-panel" id="detailPanel"></div>
+</div>
+
+<!-- 添加/编辑表单 -->
+<div class="overlay" id="formOverlay">
+  <div class="panel panel-wide">
+    <button class="close-btn" onclick="closeForm()">×</button>
+    <h2 id="formTitle">添加岗位</h2>
+    <div style="height: 20px"></div>
+    <form id="jobForm" onsubmit="saveJob(event)">
+      <input type="hidden" id="editIdx">
+      <div class="form-group"><label>岗位名称 *</label>
+        <input type="text" id="f_title" required placeholder="如：高级前端工程师"></div>
+      <div class="form-row">
+        <div class="form-group"><label>分类 *</label>
+          <select id="f_category" required>
+            <option value="技术研发">技术研发</option><option value="产品">产品</option>
+            <option value="设计">设计</option><option value="零售">零售</option>
+            <option value="运营">运营</option><option value="人力/行政/财务">人力/行政/财务</option>
+            <option value="其他">其他</option>
+          </select></div>
+        <div class="form-group"><label>工作地点 *</label>
+          <input type="text" id="f_location" required placeholder="如：上海"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>薪资范围 *</label>
+          <input type="text" id="f_salary" required placeholder="如：25K - 40K · 14薪"></div>
+        <div class="form-group"><label>工作类型</label>
+          <select id="f_type"><option value="全职">全职</option><option value="兼职">兼职</option><option value="实习">实习</option><option value="远程">远程</option></select></div>
+      </div>
+      <div class="form-group"><label>技能标签（逗号分隔）</label>
+        <input type="text" id="f_tags" placeholder="如：React, TypeScript, 3年以上">
+        <div class="form-hint">用英文逗号分隔多个标签</div></div>
+      <div class="form-group"><label>岗位描述 *</label>
+        <textarea id="f_desc" required placeholder="简要介绍这个岗位..."></textarea></div>
+      <div class="form-group"><label>工作职责（每行一条）*</label>
+        <textarea id="f_duties" required rows="4" placeholder="每行写一条职责"></textarea>
+        <div class="form-hint">按下 Enter 换行，每行一条</div></div>
+      <div class="form-group"><label>任职要求（每行一条）*</label>
+        <textarea id="f_requirements" required rows="4" placeholder="每行写一条要求"></textarea></div>
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" onclick="closeForm()">取消</button>
+        <button type="submit" class="btn-save">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 导入对话框 -->
+<div class="overlay" id="importOverlay">
+  <div class="panel panel-wide">
+    <button class="close-btn" onclick="closeImportDialog()">×</button>
+    <h2>批量导入岗位数据</h2>
+    <p class="sub">支持从 Word、Excel 复制粘贴，或上传 CSV 文件。先下载模板能避免格式问题。</p>
+
+    <div class="tabs">
+      <button class="active" data-tab="paste" onclick="switchImportTab('paste')">📋 粘贴导入</button>
+      <button data-tab="file" onclick="switchImportTab('file')">📂 文件上传</button>
+      <button data-tab="template" onclick="switchImportTab('template')">📄 下载模板</button>
+    </div>
+
+    <!-- Tab: 粘贴 -->
+    <div id="tab-paste">
+      <div style="font-size:0.88rem;color:var(--muted);margin-bottom:14px;line-height:1.9">
+        <b style="color:var(--text)">两种粘贴方式，自动识别：</b><br>
+        🖼️ <b>表格方式</b>：从 Word / Excel / 网页 选中表格 → Ctrl+C 粘贴进来<br>
+        📝 <b>文本方式</b>：直接粘贴带字段名的文本，系统自动按关键字识别分配<br>
+        💡 多个岗位用 <code style="background:#f3f4f6;padding:1px 6px;border-radius:4px">---</code> 分隔
+      </div>
+
+      <div id="pasteInputWrap">
+        <textarea class="paste-area" id="pasteInput" placeholder='在这里粘贴...
+
+【文本格式示例】（从 Word 复制）：
+岗位名称：高级前端工程师
+分类：技术
+薪资：25K - 40K · 14薪
+工作地点：上海
+工作类型：全职
+技能标签：React、TypeScript、3年以上
+
+岗位描述：
+负责公司核心产品的前端架构设计与开发。
+
+岗位职责：
+1. 负责 Web 端产品的前端架构设计和核心功能开发
+2. 搭建团队前端组件库与工程化体系
+3. 与后端工程师协作完成接口联调
+
+任职要求：
+1. 计算机相关专业，本科及以上学历
+2. 3年以上前端开发经验，精通 HTML/CSS/JavaScript
+3. 熟悉 React 或 Vue 框架
+
+---
+岗位名称：资深产品经理
+分类：产品
+薪资：30K - 50K · 14薪
+工作地点：北京
+...'></textarea>
+      </div>
+
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="tb-btn" type="button" onclick="loadTextExample('structured')">📋 加载文本示例</button>
+        <button class="tb-btn" type="button" onclick="loadTextExample('table')">🖼️ 加载表格示例</button>
+        <button class="tb-btn" type="button" onclick="document.getElementById('pasteInput').value=''">🧹 清空</button>
+      </div>
+
+      <div id="pasteFieldMap" style="display:none">
+        <div class="field-map">
+          <div class="field-map-title">请为识别到的列选择对应字段：</div>
+          <div id="fieldMapRows"></div>
+        </div>
+      </div>
+
+      <div id="pastePreview"></div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+        <button class="btn-cancel" type="button" onclick="parsePaste()">🔍 解析预览</button>
+        <button class="btn-save" type="button" onclick="confirmImport()">✅ 确认导入</button>
+      </div>
+    </div>
+
+    <!-- Tab: 文件 -->
+    <div id="tab-file" style="display:none">
+      <div class="drop-zone" id="dropZone">
+        <div class="icon">📁</div>
+        <div><b>点击选择文件</b> 或拖拽文件到这里</div>
+        <div class="file-hint">支持 .csv 和 .json 格式</div>
+      </div>
+      <input type="file" id="fileInput" accept=".csv,.json" style="display:none">
+      <div id="filePreview"></div>
+      <div class="form-actions">
+        <button class="btn-save" type="button" id="fileImportBtn" onclick="confirmImport()" style="display:none">✅ 确认导入</button>
+      </div>
+    </div>
+
+    <!-- Tab: 模板 -->
+    <div id="tab-template" style="display:none">
+      <div class="template-box">
+        <div class="icon">📄</div>
+        <h3 style="margin-bottom:6px">下载 Excel 模板</h3>
+        <p>模板包含所有必填字段的表头，用 Excel 打开后按行填写即可。<br>
+        填好后"另存为 CSV（逗号分隔）"，再回到"文件上传"标签页导入。</p>
+        <button class="btn" onclick="downloadTemplate()">⬇️ 下载 CSV 模板</button>
+      </div>
+      <div style="margin-top:22px;padding:16px;background:#fafafa;border-radius:8px;font-size:0.85rem">
+        <b style="color:var(--accent)">📖 模板字段说明：</b>
+        <ul style="margin-top:8px;padding-left:18px;color:var(--muted);line-height:1.9">
+          <li><b>岗位名称</b> - 必填，如"高级前端工程师"</li>
+          <li><b>分类</b> - 必填，可选：技术研发 / 产品 / 设计 / 零售 / 运营 / 人力/行政/财务 / 其他</li>
+          <li><b>薪资</b> - 必填，如"25K - 40K · 14薪"</li>
+          <li><b>地点</b> - 必填，如"上海"</li>
+          <li><b>类型</b> - 可选，默认"全职"</li>
+          <li><b>标签</b> - 多个标签用<b>英文分号</b>分隔，如"React;TypeScript;3年以上"</li>
+          <li><b>描述</b> - 必填，岗位简介</li>
+          <li><b>职责</b> - 多条用<b>英文分号</b>分隔</li>
+          <li><b>要求</b> - 多条用<b>英文分号</b>分隔</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="import-result" id="importResult"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_JOBS = [
+  { title: "高级前端工程师", category: "技术研发", salary: "25K - 40K · 14薪", location: "上海", type: "全职",
+    tags: ["React", "TypeScript", "3年以上"],
+    desc: "负责公司核心产品的前端架构设计与开发，推动前端工程化落地，优化用户体验与性能。",
+    duties: ["负责Web端产品的前端架构设计和核心功能开发","搭建团队前端组件库与工程化体系","与后端工程师协作完成接口联调","跟进前端技术趋势，推动技术升级"],
+    requirements: ["计算机相关专业，本科及以上学历","3年以上前端开发经验，精通 HTML/CSS/JavaScript","熟悉 React 或 Vue 框架，有大型项目经验","具备良好的沟通能力和团队协作精神"] },
+  { title: "资深产品经理", category: "产品", salary: "30K - 50K · 14薪", location: "北京", type: "全职",
+    tags: ["B端产品", "SaaS", "5年以上"],
+    desc: "主导企业级SaaS产品的规划与设计，深入理解客户需求，推动产品从0到1落地。",
+    duties: ["负责产品战略规划、需求分析与迭代","撰写PRD文档，与设计、研发团队紧密协作","跟踪产品数据，持续优化产品体验","参与市场调研与竞品分析"],
+    requirements: ["5年以上产品经理经验，有B端/SaaS产品经验优先","具备扎实的产品方法论和结构化思维","优秀的沟通表达和项目推动能力","有从0到1搭建产品经验者优先"] },
+  { title: "UI/UX 设计师", category: "设计", salary: "18K - 30K · 13薪", location: "深圳", type: "全职",
+    tags: ["Figma", "交互设计", "3年以上"],
+    desc: "负责产品界面设计与交互体验优化，打造简洁、优雅、易用的产品体验。",
+    duties: ["负责产品界面视觉设计和交互设计","制定并维护产品设计规范","参与产品需求评审，提供设计方案","对设计稿的还原度进行跟进"],
+    requirements: ["3年以上UI/UX设计经验","精通 Figma、Sketch 等设计工具","具备良好的审美和视觉表达能力","交互设计经验丰富者优先"] },
+  { title: "后端开发工程师（Java）", category: "技术研发", salary: "22K - 35K · 14薪", location: "杭州", type: "全职",
+    tags: ["Java", "Spring", "微服务"],
+    desc: "负责后端服务架构设计与核心模块开发，构建高可用、高性能的分布式系统。",
+    duties: ["负责后端系统架构设计和核心功能开发","参与系统性能优化和技术方案评审","编写单元测试和技术文档","解决线上问题，保障系统稳定运行"],
+    requirements: ["3年以上Java后端开发经验","熟悉 Spring 全家桶、MySQL、Redis","了解微服务架构和分布式技术","有高并发系统开发经验优先"] },
+  { title: "市场运营专员", category: "运营", salary: "12K - 20K · 13薪", location: "上海", type: "全职",
+    tags: ["内容运营", "新媒体", "2年以上"],
+    desc: "负责品牌内容策划与新媒体运营，提升品牌知名度与用户活跃度。",
+    duties: ["负责官方公众号、知乎等平台内容运营","策划并执行市场活动，提升品牌曝光","分析运营数据，持续优化策略","与设计师、产品团队协作产出物料"],
+    requirements: ["2年以上市场/运营相关经验","具备良好的文字表达和内容策划能力","熟悉主流新媒体平台运营规则","有独立策划并执行过活动者优先"] },
+  { title: "数据运营分析师", category: "运营", salary: "18K - 28K · 13薪", location: "北京", type: "全职",
+    tags: ["SQL", "Python", "数据驱动"],
+    desc: "通过数据发现业务机会，为产品和运营决策提供有力的数据支持。",
+    duties: ["负责业务数据指标体系的搭建与维护","进行专题分析，输出分析报告和建议","构建数据看板，跟踪核心指标变化","推动数据驱动决策的文化建设"],
+    requirements: ["3年以上数据分析或数据运营经验","熟练使用 SQL，会 Python 优先","具备良好的业务理解和结构化思维","有互联网公司数据经验优先"] }
+];
+
+const STORAGE_KEY = 'careers_page_jobs_v1';
+const FIELD_MAP = [
+  { key: 'title', label: '岗位名称', aliases: ['岗位名称','岗位','职位','职位名称','title','name'] },
+  { key: 'category', label: '分类',   aliases: ['分类','类别','类型','部门','category'] },
+  { key: 'salary',  label: '薪资',   aliases: ['薪资','工资','薪水','薪酬','salary'] },
+  { key: 'location',label: '地点',   aliases: ['地点','城市','工作地点','工作城市','location','city'] },
+  { key: 'type',    label: '工作类型', aliases: ['类型','工作类型','雇佣类型','全职/兼职','type'] },
+  { key: 'tags',    label: '技能标签', aliases: ['标签','技能','技能标签','关键词','tags','skills'] },
+  { key: 'desc',    label: '岗位描述', aliases: ['描述','岗位描述','简介','desc','description'] },
+  { key: 'duties',  label: '工作职责', aliases: ['职责','工作职责','工作内容','duties','responsibilities'] },
+  { key: 'requirements', label: '任职要求', aliases: ['要求','任职要求','资格','requirements','qualifications'] }
+];
+const DEFAULT_CATEGORY = '技术研发';
+const DEFAULT_TYPE = '全职';
+
+let jobs = [];
+let currentFilter = 'all';
+let editMode = false;
+let pendingImportJobs = null;
+
+const jobList = document.getElementById('jobList');
+const filterBar = document.getElementById('filterBar');
+const detailOverlay = document.getElementById('detailOverlay');
+const detailPanel = document.getElementById('detailPanel');
+const formOverlay = document.getElementById('formOverlay');
+const importOverlay = document.getElementById('importOverlay');
+
+/* ---------- 存储 ---------- */
+const CATEGORY_MIGRATE = { '技术': '技术研发', '市场': '运营' };
+function loadJobs() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    jobs = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_JOBS));
+  } catch { jobs = JSON.parse(JSON.stringify(DEFAULT_JOBS)); }
+  let changed = false;
+  for (const j of jobs) {
+    if (CATEGORY_MIGRATE[j.category]) { j.category = CATEGORY_MIGRATE[j.category]; changed = true; }
+  }
+  if (changed) saveJobs();
+}
+function saveJobs() { localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs)); }
+
+/* ---------- 工具 ---------- */
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function splitMulti(val) {
+  if (!val) return [];
+  return String(val).split(/[;；\n]/).map(s => s.trim()).filter(Boolean);
+}
+function joinMulti(arr) { return Array.isArray(arr) ? arr.join('；') : String(arr || ''); }
+
+/* ---------- 渲染岗位列表 ---------- */
+function renderJobs() {
+  const list = currentFilter === 'all' ? jobs : jobs.filter(j => j.category === currentFilter);
+  jobList.innerHTML = list.length ? list.map(j => {
+    const idx = jobs.indexOf(j);
+    return `
+    <div class="job-card" data-idx="${idx}">
+      <div class="edit-bar">
+        <button class="btn-edit" onclick="event.stopPropagation();openForm(${idx})">编辑</button>
+        <button class="btn-del" onclick="event.stopPropagation();deleteJob(${idx})">删除</button>
+      </div>
+      <div class="job-top">
+        <div class="job-title">${j.title}</div>
+        <div class="job-salary">${j.salary}</div>
+      </div>
+      <div class="job-meta">
+        <span>${j.category} · ${j.type}</span>
+        <span>${j.location}</span>
+      </div>
+      <div class="job-tags">${(j.tags||[]).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+    </div>`;
+  }).join('') : '<div class="empty">暂无匹配的岗位' + (editMode ? '，点击下方按钮添加' : '') + '</div>';
+
+  if (!editMode) {
+    document.querySelectorAll('.job-card').forEach(card => {
+      card.addEventListener('click', () => openDetail(parseInt(card.dataset.idx)));
+    });
+  }
+}
+
+filterBar.addEventListener('click', e => {
+  if (e.target.tagName === 'BUTTON') {
+    document.querySelectorAll('#filterBar button').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    currentFilter = e.target.dataset.filter;
+    renderJobs();
+  }
+});
+
+/* ---------- 详情 ---------- */
+function openDetail(idx) {
+  const j = jobs[idx];
+  detailPanel.innerHTML = `
+    <button class="close-btn" onclick="closeOverlay('detailOverlay')">×</button>
+    <h2>${j.title}</h2>
+    <div class="job-salary">${j.salary}</div>
+    <div class="job-meta"><span>${j.category} · ${j.type}</span><span>${j.location}</span></div>
+    <section><h3>岗位描述</h3><p>${j.desc}</p></section>
+    <section><h3>工作职责</h3><ul>${(j.duties||[]).map(d => `<li>${d}</li>`).join('')}</ul></section>
+    <section><h3>任职要求</h3><ul>${(j.requirements||[]).map(r => `<li>${r}</li>`).join('')}</ul></section>
+    <button class="apply-btn" onclick="alert('感谢关注！简历投递邮箱：hr@example.com')">立即投递简历</button>
+  `;
+  openOverlay('detailOverlay');
+}
+
+/* ---------- Overlay 通用 ---------- */
+function openOverlay(id) { document.getElementById(id).classList.add('show'); document.body.style.overflow = 'hidden'; }
+function closeOverlay(id) { document.getElementById(id).classList.remove('show'); document.body.style.overflow = ''; }
+document.querySelectorAll('.overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) { ov.classList.remove('show'); document.body.style.overflow = ''; } });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.overlay.show').forEach(o => o.classList.remove('show'));
+    document.body.style.overflow = '';
+    closeAllDD();
+  }
+});
+
+/* ---------- 下拉菜单 ---------- */
+function toggleDD(id) {
+  const el = document.getElementById(id);
+  const isOpen = el.classList.contains('open');
+  closeAllDD();
+  if (!isOpen) el.classList.add('open');
+}
+function closeAllDD() { document.querySelectorAll('.tb-dropdown.open').forEach(d => d.classList.remove('open')); }
+document.addEventListener('click', e => {
+  if (!e.target.closest('.tb-dropdown')) closeAllDD();
+});
+
+/* ---------- 编辑模式 & 表单 ---------- */
+document.getElementById('btnEdit').addEventListener('click', () => {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  document.getElementById('btnEdit').classList.toggle('active', editMode);
+  document.getElementById('btnEdit').textContent = editMode ? '✅ 完成编辑' : '✏️ 编辑模式';
+  if (!editMode) closeForm();
+  renderJobs();
+});
+
+function openForm(idx) {
+  document.getElementById('formTitle').textContent = idx !== undefined ? '编辑岗位' : '添加岗位';
+  document.getElementById('editIdx').value = idx !== undefined ? idx : '';
+  if (idx !== undefined) {
+    const j = jobs[idx];
+    document.getElementById('f_title').value = j.title;
+    document.getElementById('f_category').value = j.category;
+    document.getElementById('f_location').value = j.location;
+    document.getElementById('f_salary').value = j.salary;
+    document.getElementById('f_type').value = j.type;
+    document.getElementById('f_tags').value = (j.tags||[]).join(', ');
+    document.getElementById('f_desc').value = j.desc;
+    document.getElementById('f_duties').value = (j.duties||[]).join('\n');
+    document.getElementById('f_requirements').value = (j.requirements||[]).join('\n');
+  } else {
+    document.getElementById('jobForm').reset();
+  }
+  openOverlay('formOverlay');
+}
+function closeForm() { closeOverlay('formOverlay'); }
+
+function saveJob(e) {
+  e.preventDefault();
+  const idxInput = document.getElementById('editIdx').value;
+  const data = {
+    title: document.getElementById('f_title').value.trim(),
+    category: document.getElementById('f_category').value,
+    location: document.getElementById('f_location').value.trim(),
+    salary: document.getElementById('f_salary').value.trim(),
+    type: document.getElementById('f_type').value,
+    tags: splitMulti(document.getElementById('f_tags').value.replace(/,/g, ';')),
+    desc: document.getElementById('f_desc').value.trim(),
+    duties: document.getElementById('f_duties').value.split('\n').map(s => s.trim()).filter(Boolean),
+    requirements: document.getElementById('f_requirements').value.split('\n').map(s => s.trim()).filter(Boolean)
+  };
+  if (idxInput === '') { jobs.push(data); showToast('✅ 岗位已添加'); }
+  else { jobs[parseInt(idxInput)] = data; showToast('✅ 岗位已更新'); }
+  saveJobs(); closeForm(); renderJobs();
+}
+
+function deleteJob(idx) {
+  if (!confirm(`确认删除「${jobs[idx].title}」？此操作不可撤销。`)) return;
+  jobs.splice(idx, 1); saveJobs(); renderJobs(); showToast('🗑️ 已删除');
+}
+
+/* ---------- 导入对话框 ---------- */
+function openImportDialog(tab) {
+  document.getElementById('pasteInput').value = '';
+  document.getElementById('pastePreview').innerHTML = '';
+  document.getElementById('pasteFieldMap').style.display = 'none';
+  document.getElementById('pasteFieldMap').innerHTML = '';
+  document.getElementById('filePreview').innerHTML = '';
+  document.getElementById('fileImportBtn').style.display = 'none';
+  document.getElementById('importResult').className = 'import-result';
+  document.getElementById('importResult').textContent = '';
+  pendingImportJobs = null;
+  switchImportTab(tab || 'paste');
+  openOverlay('importOverlay');
+}
+function closeImportDialog() { closeOverlay('importOverlay'); }
+
+function switchImportTab(name) {
+  document.querySelectorAll('#importOverlay .tabs button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`#importOverlay .tabs button[data-tab="${name}"]`).classList.add('active');
+  ['paste','file','template'].forEach(t => { document.getElementById('tab-'+t).style.display = (t === name ? '' : 'none'); });
+}
+
+const TEXT_FIELD_MAP = [
+  { key: 'title',        aliases: ['岗位名称','职位名称','招聘岗位','岗位','职位','title'] },
+  { key: 'category',     aliases: ['分类','类别','部门','所属部门','category'] },
+  { key: 'salary',       aliases: ['薪资','工资','薪水','薪酬','待遇','salary'] },
+  { key: 'location',     aliases: ['工作地点','地点','城市','办公地点','location','city'] },
+  { key: 'type',         aliases: ['工作类型','类型','雇佣性质','雇佣类型','type'] },
+  { key: 'tags',         aliases: ['技能标签','关键词','技能要求','技术栈','标签','tags'] },
+  { key: 'desc',         aliases: ['岗位描述','职位描述','工作描述','岗位简介','desc','description'] },
+  { key: 'duties',       aliases: ['岗位职责','工作职责','主要职责','工作内容','duties','responsibilities'] },
+  { key: 'requirements', aliases: ['任职要求','岗位要求','职位要求','资格要求','必备条件','requirements','qualifications'] }
+];
+
+/* ---- 表格解析 ---- */
+function parsePastedText(text) {
+  const rows = [];
+  const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
+  for (const line of lines) {
+    let cells;
+    if (line.includes('\t')) cells = line.split('\t');
+    else if (line.includes('","') || (line.startsWith('"') && line.endsWith('"'))) {
+      cells = parseCsvLine(line);
+    } else if (line.includes(',')) cells = line.split(',');
+    else cells = [line];
+    cells = cells.map(c => c.replace(/^"|"$/g, '').trim());
+    if (cells.some(c => c)) rows.push(cells);
+  }
+  return rows;
+}
+function parseCsvLine(line) {
+  const res = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+    else if (ch === ',' && !inQ) { res.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  res.push(cur); return res;
+}
+
+function guessField(header) {
+  const h = String(header || '').trim().toLowerCase();
+  for (const f of FIELD_MAP) {
+    if (f.aliases.some(a => a.toLowerCase() === h || h.includes(a.toLowerCase()))) return f.key;
+  }
+  return null;
+}
+
+function renderFieldMap(headers) {
+  const container = document.getElementById('fieldMapRows');
+  container.innerHTML = headers.map((h, i) => {
+    const guess = guessField(h);
+    const opts = FIELD_MAP.map(f =>
+      `<option value="${f.key}" ${guess === f.key ? 'selected' : ''}>${f.label}</option>`
+    ).join('');
+    return `<div class="field-map-row">
+      <span style="color:var(--muted);font-size:0.8rem">${h || '(第'+(i+1)+'列)'}</span>
+      <span class="arrow">→</span>
+      <select data-col="${i}"><option value="">（跳过此列）</option>${opts}</select>
+    </div>`;
+  }).join('');
+  document.getElementById('pasteFieldMap').style.display = 'block';
+}
+
+function rowsToJobs(rows, colMap) {
+  return rows.map(r => {
+    const job = { tags: [], duties: [], requirements: [], type: DEFAULT_TYPE, category: DEFAULT_CATEGORY };
+    for (let col = 0; col < colMap.length; col++) {
+      const key = colMap[col];
+      if (!key) continue;
+      const val = (r[col] || '').trim();
+      if (!val) continue;
+      if (['tags','duties','requirements'].includes(key)) job[key] = splitMulti(val);
+      else job[key] = val;
+    }
+    if (!job.category) job.category = DEFAULT_CATEGORY;
+    if (!job.type) job.type = DEFAULT_TYPE;
+    return job;
+  }).filter(j => j.title);
+}
+
+/* ---- 智能文本解析 ---- */
+function matchTextField(line) {
+  const clean = line.replace(/^[\s\u3000·\-*•●\d\.\)、]+/, '').trim();
+  for (const f of TEXT_FIELD_MAP) {
+    for (const alias of f.aliases) {
+      const re = new RegExp(alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[：:\\s]*', 'i');
+      const m = line.match(re);
+      if (m) {
+        const after = line.slice(m[0].length).trim();
+        return { key: f.key, value: after };
+      }
+    }
+  }
+  return null;
+}
+
+function parseSmartText(text) {
+  const rawLines = text.replace(/\r/g, '').split('\n');
+  const jobs = [];
+  let current = null;
+  let currentKey = null;
+
+  function push() {
+    if (current && current.title) {
+      if (!current.category) current.category = DEFAULT_CATEGORY;
+      if (!current.type) current.type = DEFAULT_TYPE;
+      jobs.push(current);
+    }
+  }
+
+  for (let i = 0; i < rawLines.length; i++) {
+    const rawLine = rawLines[i];
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    if (/^[=\-_*#~]{2,}$/.test(line) || line === '---') {
+      push();
+      current = null;
+      currentKey = null;
+      continue;
+    }
+
+    const matched = matchTextField(line);
+
+    if (matched) {
+      if (matched.key === 'title') {
+        push();
+        current = {
+          title: matched.value || '',
+          category: '', salary: '', location: '', type: '', desc: '',
+          tags: [], duties: [], requirements: []
+        };
+        currentKey = null;
+      } else {
+        if (!current) {
+          current = { title: '', category: '', salary: '', location: '', type: '', desc: '', tags: [], duties: [], requirements: [] };
+        }
+        const v = matched.value;
+        const listKeys = ['duties', 'requirements', 'tags'];
+        if (listKeys.includes(matched.key)) {
+          current[matched.key] = v ? [v] : [];
+        } else {
+          current[matched.key] = v;
+        }
+        currentKey = matched.key;
+      }
+    } else if (current) {
+      if (currentKey === 'duties' || currentKey === 'requirements' || currentKey === 'tags') {
+        const cleaned = line.replace(/^[\d\.\)、•●\-\*]+/, '').trim();
+        if (cleaned) current[currentKey].push(cleaned);
+      } else if (currentKey && ['desc'].includes(currentKey)) {
+        current[currentKey] += (current[currentKey] ? '\n' : '') + line;
+      } else if (!current.title) {
+        current.title = line;
+      } else {
+        const allText = [current.desc, current.duties.join('；'), current.requirements.join('；')].filter(Boolean).join(' ');
+        if (line.length < 40 && allText.length < 30) {
+          if (!current.desc) current.desc = line;
+        } else {
+          if (!current.desc) current.desc = line;
+        }
+      }
+    }
+  }
+  push();
+  return jobs;
+}
+
+function isTableLike(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  if (!lines.length) return false;
+  const tabCount = lines.filter(l => l.includes('\t')).length;
+  const commaCount = lines.filter(l => l.includes(',')).length;
+  if (tabCount >= Math.min(2, lines.length)) return true;
+  if (commaCount >= Math.min(2, lines.length) && lines[0].includes(',')) return true;
+  const smart = parseSmartText(text);
+  if (smart.length >= 2) return false;
+  return false;
+}
+
+function buildColMapFromFieldMap() {
+  const selects = document.querySelectorAll('#fieldMapRows select');
+  const maxCol = Math.max(...Array.from(selects).map(s => parseInt(s.dataset.col)), 0);
+  const map = new Array(maxCol + 1).fill('');
+  selects.forEach(s => { map[parseInt(s.dataset.col)] = s.value; });
+  return map;
+}
+
+function showPreview(jobsList, extraInfo) {
+  if (!jobsList.length) {
+    document.getElementById('pastePreview').innerHTML = '';
+    return;
+  }
+  const headers = ['岗位名称','分类','薪资','地点','类型','标签'];
+  const rows = jobsList.slice(0, 5);
+  const html = `
+    <div style="font-size:0.85rem;color:var(--muted);margin-top:14px;margin-bottom:6px">
+      共解析到 <b style="color:var(--accent)">${jobsList.length}</b> 个有效岗位${extraInfo ? '，'+extraInfo : ''}，预览前 5 行：
+    </div>
+    <table class="preview-table">
+      <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+      <tbody>
+        ${rows.map(j => `<tr>
+          <td>${j.title||''}</td><td>${j.category||''}</td><td>${j.salary||''}</td>
+          <td>${j.location||''}</td><td>${j.type||''}</td>
+          <td>${(j.tags||[]).slice(0,3).join(', ')}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    ${jobsList.length > 5 ? `<div class="preview-trunc">...还有 ${jobsList.length - 5} 条未显示</div>` : ''}
+  `;
+  document.getElementById('pastePreview').innerHTML = html;
+}
+
+function parsePaste() {
+  const text = document.getElementById('pasteInput').value;
+  if (!text || !text.trim()) { showToast('请先粘贴数据', 'error'); return; }
+
+  document.getElementById('pasteFieldMap').style.display = 'none';
+  document.getElementById('pastePreview').innerHTML = '';
+
+  let jobsList = [];
+
+  if (isTableLike(text)) {
+    const rows = parsePastedText(text);
+    if (rows.length < 1) { showToast('未能解析出任何数据', 'error'); return; }
+    const hasHeader = rows[0].some(cell => guessField(cell));
+    let headers, dataRows;
+    if (hasHeader) { headers = rows[0]; dataRows = rows.slice(1); }
+    else { headers = rows[0].map((_, i) => `第${i+1}列`); dataRows = rows; }
+
+    renderFieldMap(headers);
+    let colMap = headers.map(h => guessField(h));
+    const hasAny = colMap.some(Boolean);
+    if (!hasAny && !hasHeader) {
+      if (!confirm('未识别到表头，第一行会被当作数据处理。是否继续？')) return;
+      colMap = FIELD_MAP.slice(0, headers.length).map(f => f ? f.key : '');
+    }
+    jobsList = rowsToJobs(dataRows, colMap);
+    pendingImportJobs = jobsList;
+    showPreview(jobsList);
+    showToast(`🔍 表格格式解析完成，共 ${jobsList.length} 个有效岗位`);
+  } else {
+    jobsList = parseSmartText(text);
+    if (!jobsList.length) { showToast('未能识别出任何岗位，请确保文本里包含"岗位名称"等关键字', 'error'); return; }
+    pendingImportJobs = jobsList;
+    showPreview(jobsList);
+    showToast(`🔍 文本格式解析完成，共 ${jobsList.length} 个有效岗位`);
+  }
+}
+
+function loadTextExample(kind) {
+  if (kind === 'structured') {
+    document.getElementById('pasteInput').value = `岗位名称：高级前端工程师
+分类：技术研发
+薪资：25K - 40K · 14薪
+工作地点：上海
+工作类型：全职
+技能标签：React、TypeScript、3年以上
+
+岗位描述：
+负责公司核心产品的前端架构设计与开发，推动前端工程化落地。
+
+岗位职责：
+1. 负责 Web 端产品的前端架构设计和核心功能开发
+2. 搭建团队前端组件库与工程化体系
+3. 与后端工程师协作完成接口联调
+4. 跟进前端技术趋势，推动技术升级
+
+任职要求：
+1. 计算机相关专业，本科及以上学历
+2. 3年以上前端开发经验，精通 HTML/CSS/JavaScript
+3. 熟悉 React 或 Vue 框架，有大型项目经验
+4. 具备良好的沟通能力和团队协作精神
+
+---
+岗位名称：资深产品经理
+分类：产品
+薪资：30K - 50K · 14薪
+工作地点：北京
+工作类型：全职
+技能标签：B端产品、SaaS、5年以上
+
+岗位描述：
+主导企业级 SaaS 产品的规划与设计，深入理解客户需求。
+
+岗位职责：
+• 负责产品战略规划、需求分析与迭代
+• 撰写 PRD 文档，与设计、研发团队紧密协作
+• 跟踪产品数据，持续优化产品体验
+
+任职要求：
+• 5年以上产品经理经验，有 B 端/SaaS 产品经验优先
+• 具备扎实的产品方法论和结构化思维
+• 优秀的沟通表达和项目推动能力`;
+  } else {
+    document.getElementById('pasteInput').value = `岗位名称	分类	薪资	地点	类型	标签	描述	职责	要求
+UI/UX设计师	设计	18K-30K·13薪	深圳	全职	Figma;交互设计	负责产品界面设计与交互体验优化	界面视觉设计;交互设计;制定设计规范	3年以上设计经验;精通Figma;良好审美
+后端开发工程师（Java）	技术研发	22K-35K·14薪	杭州	全职	Java;Spring;微服务	负责后端服务架构设计与核心模块开发	架构设计;核心功能开发;性能优化	3年以上Java开发;熟悉Spring全家桶;了解微服务`;
+  }
+  showToast('✅ 示例已加载，点击「🔍 解析预览」即可查看效果');
+}
+
+/* ---- 文件上传 ---- */
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      let jobsList;
+      if (ext === 'json') {
+        const data = JSON.parse(ev.target.result);
+        if (!Array.isArray(data)) throw new Error('JSON 必须是数组');
+        jobsList = normalizeJobs(data);
+      } else if (ext === 'csv') {
+        const text = ev.target.result;
+        const rows = parsePastedText(text);
+        if (rows.length < 1) throw new Error('CSV 为空');
+        const headers = rows[0];
+        const dataRows = rows.slice(1);
+        const colMap = headers.map(h => guessField(h));
+        jobsList = rowsToJobs(dataRows, colMap);
+      } else {
+        throw new Error('仅支持 .csv 或 .json 文件');
+      }
+      pendingImportJobs = jobsList;
+      const headers = ['岗位名称','分类','薪资','地点','类型'];
+      const preview = jobsList.slice(0, 5);
+      document.getElementById('filePreview').innerHTML = `
+        <div style="margin-top:18px">
+          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:8px">
+            📄 已读取 <b style="color:var(--accent)">${file.name}</b>，共 <b style="color:var(--accent)">${jobsList.length}</b> 个有效岗位，预览：
+          </div>
+          <table class="preview-table">
+            <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+            <tbody>${preview.map(j => `<tr>
+              <td>${j.title||''}</td><td>${j.category||''}</td><td>${j.salary||''}</td>
+              <td>${j.location||''}</td><td>${j.type||''}</td>
+            </tr>`).join('')}</tbody>
+          </table>
+          ${jobsList.length > 5 ? `<div class="preview-trunc">...还有 ${jobsList.length - 5} 条</div>` : ''}
+        </div>
+      `;
+      document.getElementById('fileImportBtn').style.display = 'inline-block';
+    } catch (err) {
+      showImportResult(false, '❌ 读取失败：' + err.message);
+    }
+  };
+  reader.onerror = () => showImportResult(false, '❌ 文件读取错误');
+  reader.readAsText(file, 'UTF-8');
+}
+
+function normalizeJobs(list) {
+  return list.map(raw => ({
+    title: (raw.title || raw.岗位名称 || '').trim(),
+    category: (raw.category || raw.分类 || DEFAULT_CATEGORY).trim() || DEFAULT_CATEGORY,
+    salary: (raw.salary || raw.薪资 || '').trim(),
+    location: (raw.location || raw.地点 || '').trim(),
+    type: (raw.type || raw.类型 || DEFAULT_TYPE).trim() || DEFAULT_TYPE,
+    tags: Array.isArray(raw.tags) ? raw.tags : splitMulti(raw.tags || raw.标签 || ''),
+    desc: (raw.desc || raw.描述 || raw.description || '').trim(),
+    duties: Array.isArray(raw.duties) ? raw.duties : splitMulti(raw.duties || raw.职责 || ''),
+    requirements: Array.isArray(raw.requirements) ? raw.requirements : splitMulti(raw.requirements || raw.要求 || '')
+  })).filter(j => j.title);
+}
+
+/* ---- 确认导入 ---- */
+function confirmImport() {
+  if (!pendingImportJobs || !pendingImportJobs.length) {
+    showToast('没有可导入的数据', 'error'); return;
+  }
+  const action = confirm(`检测到 ${pendingImportJobs.length} 个岗位。\n\n点"确定" → 合并到现有数据（重复的岗位名称会被覆盖）\n点"取消" → 替换现有全部数据`);
+  if (action === true) {
+    const existingTitles = new Set(jobs.map(j => j.title));
+    let added = 0, updated = 0;
+    for (const nj of pendingImportJobs) {
+      const idx = jobs.findIndex(j => j.title === nj.title);
+      if (idx >= 0) { jobs[idx] = nj; updated++; }
+      else { jobs.push(nj); added++; }
+    }
+    saveJobs(); renderJobs();
+    showImportResult(true, `✅ 导入完成！新增 ${added} 个，更新 ${updated} 个，当前共 ${jobs.length} 个岗位`);
+    showToast('✅ 导入成功');
+  } else if (action === false) {
+    if (!confirm('⚠️ 现有所有岗位将被清空，确认替换？')) return;
+    jobs = pendingImportJobs.slice();
+    saveJobs(); renderJobs();
+    showImportResult(true, `✅ 已替换，当前共 ${jobs.length} 个岗位`);
+    showToast('✅ 导入成功');
+  }
+}
+
+function showImportResult(ok, msg) {
+  const el = document.getElementById('importResult');
+  el.className = 'import-result show ' + (ok ? 'ok' : 'err');
+  el.textContent = msg;
+}
+
+/* ---------- 模板下载 ---------- */
+function openTemplateDialog() { switchImportTab('template'); openOverlay('importOverlay'); }
+
+function downloadTemplate() {
+  const headers = ['岗位名称','分类','薪资','地点','类型','标签','岗位描述','工作职责','任职要求'];
+  const sample = [
+    ['高级前端工程师','技术研发','25K - 40K · 14薪','上海','全职','React;TypeScript','负责Web端产品的前端架构设计','开发核心功能;优化性能','本科;3年以上经验'],
+    ['资深产品经理','产品','30K - 50K · 14薪','北京','全职','B端;SaaS','主导产品规划与设计','需求分析;撰写PRD','5年以上产品经验']
+  ];
+  const csv = [headers, ...sample].map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = '招聘岗位模板.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('📄 模板已下载，用 Excel 打开即可填写');
+}
+
+/* ---------- 导出 ---------- */
+function exportFile(format) {
+  if (!jobs.length) { showToast('当前没有数据可导出', 'error'); return; }
+  if (format === 'json') {
+    const blob = new Blob([JSON.stringify(jobs, null, 2)], { type: 'application/json' });
+    triggerDownload(blob, `careers-${today()}.json`);
+    showToast('📤 JSON 备份已导出');
+  } else {
+    const headers = ['岗位名称','分类','薪资','地点','类型','标签','岗位描述','工作职责','任职要求'];
+    const rows = jobs.map(j => [
+      j.title, j.category, j.salary, j.location, j.type,
+      joinMulti(j.tags), j.desc, joinMulti(j.duties), joinMulti(j.requirements)
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(c => `"${String(c||'').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
+    triggerDownload(blob, `careers-${today()}.csv`);
+    showToast('📊 CSV 已导出，Excel 可直接打开');
+  }
+}
+function triggerDownload(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+}
+function today() { return new Date().toISOString().slice(0,10); }
+
+/* ---------- 恢复示例 ---------- */
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (!confirm('确认恢复为示例数据？当前所有修改将会丢失！')) return;
+  jobs = JSON.parse(JSON.stringify(DEFAULT_JOBS));
+  saveJobs(); renderJobs(); showToast('🔄 已恢复示例数据');
+});
+
+/* ---------- 启动 ---------- */
+loadJobs();
+renderJobs();
+</script>
+</body>
+</html>
