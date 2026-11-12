@@ -922,15 +922,15 @@
       </button>
       <button class="mail-choice" onclick="sendViaQQ()">
         <span class="mc-icon">🐧</span>
-        <span class="mc-text"><b>QQ 邮箱</b><small>优先打开 QQ 邮箱 App，未安装则打开网页版</small></span>
+        <span class="mc-text"><b>QQ 邮箱</b><small>打开 QQ 邮箱网页版，并自动复制收件邮箱</small></span>
       </button>
       <button class="mail-choice" onclick="sendVia163()">
         <span class="mc-icon">📮</span>
-        <span class="mc-text"><b>网易邮箱</b><small>优先打开网易邮箱 App，未安装则打开网页版</small></span>
+        <span class="mc-text"><b>网易邮箱</b><small>打开网易邮箱网页版，并自动复制收件邮箱</small></span>
       </button>
       <button class="mail-choice" onclick="copyMailOnly()">
         <span class="mc-icon">📋</span>
-        <span class="mc-text"><b>复制邮箱地址</b><small>复制后粘贴到任意邮箱 App 发送</small></span>
+        <span class="mc-text"><b>复制邮箱地址</b><small>仅复制简历投递邮箱地址</small></span>
       </button>
     </div>
     <div class="form-actions">
@@ -1763,11 +1763,6 @@ function buildMailto() {
   return 'mailto:' + _pendingMail.to + '?subject=' + encodeURIComponent(_pendingMail.subject) + '&body=' + encodeURIComponent(_pendingMail.body);
 }
 
-function getMailText() {
-  if (!_pendingMail) return '';
-  return '收件人：' + _pendingMail.to + '\n主题：' + _pendingMail.subject + '\n\n' + _pendingMail.body;
-}
-
 function fallbackCopy(text, done) {
   const ta = document.createElement('textarea');
   ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
@@ -1778,9 +1773,9 @@ function fallbackCopy(text, done) {
 }
 
 function copyMailText(silent) {
-  const text = getMailText();
-  if (!text) return;
-  const done = () => { if (!silent) showToast('✅ 已复制邮件内容，粘贴到邮箱即可'); };
+  if (!_pendingMail) return;
+  const text = _pendingMail.to; // 只复制邮箱地址，不带岗位、主题、个人信息
+  const done = () => { if (!silent) showToast('✅ 已复制邮箱地址：' + text); };
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
   } else {
@@ -1794,7 +1789,7 @@ function sendViaDefault() {
   if (!_pendingMail) return;
   if (isWeChatBrowser()) {
     copyMailText(true);
-    showToast('微信内无法直接调用邮箱，已复制内容，请粘贴到邮箱 App');
+    showToast('微信内无法直接调用邮箱，已复制邮箱地址，请到浏览器打开邮箱');
     closeOverlay('mailPickerOverlay');
     return;
   }
@@ -1803,25 +1798,21 @@ function sendViaDefault() {
   showToast('✅ 已打开邮件客户端');
 }
 
-function openMailApp(scheme, webUrl) {
+function openMailWeb(webUrl) {
   if (!_pendingMail) return;
   copyMailText(true);
   if (isWeChatBrowser()) {
-    showToast('微信内无法跳转邮箱 App，已复制内容，请粘贴到邮箱');
+    showToast('微信内无法打开邮箱，已复制邮箱地址，请到浏览器打开');
     closeOverlay('mailPickerOverlay');
     return;
   }
-  window.location.href = scheme;
-  setTimeout(() => {
-    if (document.hidden) return; // 已切换到 App
-    window.open(webUrl, '_blank');
-  }, 1200);
+  window.open(webUrl, '_blank');
   closeOverlay('mailPickerOverlay');
-  showToast('已复制邮件内容，可在邮箱里直接粘贴');
+  showToast('已复制邮箱地址，请在邮箱页面粘贴');
 }
 
-function sendViaQQ() { openMailApp('qqmail://', 'https://mail.qq.com'); }
-function sendVia163() { openMailApp('mail163://', 'https://mail.163.com'); }
+function sendViaQQ() { openMailWeb('https://mail.qq.com'); }
+function sendVia163() { openMailWeb('https://mail.163.com'); }
 
 function copyMailOnly() {
   copyMailText();
