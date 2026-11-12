@@ -582,8 +582,9 @@
   }
   /* 手机端：自由画布降级为单列流式布局，避免固定像素坐标导致卡片溢出屏幕 */
   @media (max-width: 767px) {
-    #pageCanvas { height: auto !important; padding: 0 12px 24px; }
+    #pageCanvas { height: auto !important; padding: 0 12px 24px; display: flex; flex-direction: column; }
     #pageCanvas .page-card {
+      flex: 0 0 auto;
       position: static !important;
       left: auto !important;
       top: auto !important;
@@ -593,6 +594,10 @@
       transform: none !important;
       zoom: 1 !important;
     }
+    /* 手机端卡片顺序：主标题 -> 轮播 -> 关于我们 */
+    #pageCanvas .page-card[data-card="hero"] { order: 1; }
+    #pageCanvas .page-card[data-card="gallery"] { order: 2; }
+    #pageCanvas .page-card[data-card="main"] { order: 3; }
     /* 轮播卡内部是绝对定位，需显式给高度，否则塌陷为 0 */
     #pageCanvas #cardGallery { height: 220px !important; }
     /* 主卡内容区改为自然高度，避免内部滚动裁切 */
@@ -712,6 +717,19 @@
   @media (max-width: 600px) {
     body.admin .page-card { outline-width: 1px; }
   }
+  /* ============ 邮件发送方式选择 ============ */
+  .mail-picker { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+  .mail-choice {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px;
+    background: #fff; cursor: pointer; text-align: left; font-family: inherit;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .mail-choice:hover { border-color: var(--accent); background: var(--accent-bg); }
+  .mc-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .mc-text { display: flex; flex-direction: column; }
+  .mc-text b { font-size: 0.95rem; color: var(--text); }
+  .mc-text small { font-size: 0.78rem; color: var(--muted); }
 </style>
 </head>
 
@@ -887,6 +905,36 @@
     <div class="form-actions">
       <button class="btn-cancel" onclick="closeOverlay('applyOverlay')">取消</button>
       <button class="btn-save" onclick="confirmApply()">✅ 去发送邮件</button>
+    </div>
+  </div>
+</div>
+
+<!-- 邮件发送方式选择 -->
+<div class="overlay" id="mailPickerOverlay">
+  <div class="panel" style="max-width:420px">
+    <button class="close-btn" onclick="closeOverlay('mailPickerOverlay')">×</button>
+    <h2>选择发送方式</h2>
+    <p class="sub">请选择用哪个邮箱发送简历</p>
+    <div class="mail-picker">
+      <button class="mail-choice" onclick="sendViaDefault()">
+        <span class="mc-icon">📱</span>
+        <span class="mc-text"><b>手机自带邮箱</b><small>调用系统默认邮件 App（需已配置账号）</small></span>
+      </button>
+      <button class="mail-choice" onclick="sendViaQQ()">
+        <span class="mc-icon">🐧</span>
+        <span class="mc-text"><b>QQ 邮箱</b><small>优先打开 QQ 邮箱 App，未安装则打开网页版</small></span>
+      </button>
+      <button class="mail-choice" onclick="sendVia163()">
+        <span class="mc-icon">📮</span>
+        <span class="mc-text"><b>网易邮箱</b><small>优先打开网易邮箱 App，未安装则打开网页版</small></span>
+      </button>
+      <button class="mail-choice" onclick="copyMailOnly()">
+        <span class="mc-icon">📋</span>
+        <span class="mc-text"><b>复制邮箱地址</b><small>复制后粘贴到任意邮箱 App 发送</small></span>
+      </button>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeOverlay('mailPickerOverlay')">取消</button>
     </div>
   </div>
 </div>
@@ -1702,10 +1750,82 @@ function confirmApply() {
   const targetEmail = sanitizeEmail(applyEmail);
   const body = '您好，\n\n我对【' + j.title + '】岗位很感兴趣，随信附上我的简历。\n\n个人信息：\n姓名：' + name + '\n手机：' + phone + '\n邮箱：' + (document.getElementById('applyEmail').value || '未提供') + '\n\n投递岗位：' + j.title + '（' + j.location + '）\n\n' + (document.getElementById('applyMsg').value || '') + '\n\n期待回复！';
   const subject = '求职-' + name + '-' + j.title;
-  const mailto = 'mailto:' + targetEmail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-  window.location.href = mailto;
-  showToast('✅ 已打开邮件客户端');
+  _pendingMail = { to: targetEmail, subject: subject, body: body };
   closeOverlay('applyOverlay');
+  openOverlay('mailPickerOverlay');
+}
+
+/* ============ 邮件发送方式选择 ============ */
+let _pendingMail = null;
+
+function buildMailto() {
+  if (!_pendingMail) return '';
+  return 'mailto:' + _pendingMail.to + '?subject=' + encodeURIComponent(_pendingMail.subject) + '&body=' + encodeURIComponent(_pendingMail.body);
+}
+
+function getMailText() {
+  if (!_pendingMail) return '';
+  return '收件人：' + _pendingMail.to + '\n主题：' + _pendingMail.subject + '\n\n' + _pendingMail.body;
+}
+
+function fallbackCopy(text, done) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); if (done) done(); }
+  catch (e) { showToast('复制失败，请手动记录邮箱地址', 'error'); }
+  document.body.removeChild(ta);
+}
+
+function copyMailText(silent) {
+  const text = getMailText();
+  if (!text) return;
+  const done = () => { if (!silent) showToast('✅ 已复制邮件内容，粘贴到邮箱即可'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+
+function isWeChatBrowser() { return /micromessenger/i.test(navigator.userAgent); }
+
+function sendViaDefault() {
+  if (!_pendingMail) return;
+  if (isWeChatBrowser()) {
+    copyMailText(true);
+    showToast('微信内无法直接调用邮箱，已复制内容，请粘贴到邮箱 App');
+    closeOverlay('mailPickerOverlay');
+    return;
+  }
+  window.location.href = buildMailto();
+  closeOverlay('mailPickerOverlay');
+  showToast('✅ 已打开邮件客户端');
+}
+
+function openMailApp(scheme, webUrl) {
+  if (!_pendingMail) return;
+  copyMailText(true);
+  if (isWeChatBrowser()) {
+    showToast('微信内无法跳转邮箱 App，已复制内容，请粘贴到邮箱');
+    closeOverlay('mailPickerOverlay');
+    return;
+  }
+  window.location.href = scheme;
+  setTimeout(() => {
+    if (document.hidden) return; // 已切换到 App
+    window.open(webUrl, '_blank');
+  }, 1200);
+  closeOverlay('mailPickerOverlay');
+  showToast('已复制邮件内容，可在邮箱里直接粘贴');
+}
+
+function sendViaQQ() { openMailApp('qqmail://', 'https://mail.qq.com'); }
+function sendVia163() { openMailApp('mail163://', 'https://mail.163.com'); }
+
+function copyMailOnly() {
+  copyMailText();
+  closeOverlay('mailPickerOverlay');
 }
 
 /* ============ 编辑岗位 ============ */
