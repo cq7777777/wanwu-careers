@@ -602,6 +602,8 @@
     #pageCanvas #cardGallery { height: 220px !important; }
     /* 主卡内容区改为自然高度，避免内部滚动裁切 */
     #pageCanvas #cardMain .card-scroll { height: auto !important; overflow: visible !important; }
+    /* 轮播图片等比完整显示，留白处自然透出卡片背景 */
+    #pageCanvas #cardGallery .hero-gallery-inner img { object-fit: contain; }
   }
   .page-card .card-fx {
     position: absolute; inset: 0; border-radius: inherit;
