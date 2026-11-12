@@ -719,7 +719,6 @@
       </div>
     </div>
     <button class="tb-btn admin-only" onclick="openAdminDialog()">⚙️ 后台管理</button>
-    <button class="tb-btn admin-only" onclick="resetCardLayout()" title="三张卡片恢复默认位置与大小">↺ 恢复卡片布局</button>
     <button class="tb-btn admin-only" id="btnLogout" onclick="logout()">🚪 退出</button>
   </div>
 </div>
@@ -885,6 +884,7 @@
       <button class="admin-tab-btn active" data-tab="tab-text" onclick="switchAdminTab('tab-text')">📝 文本管理</button>
       <button class="admin-tab-btn" data-tab="tab-ui" onclick="switchAdminTab('tab-ui')">🎨 UI 设置</button>
       <button class="admin-tab-btn" data-tab="tab-security" onclick="switchAdminTab('tab-security')">🔐 密码安全</button>
+      <button class="admin-tab-btn" data-tab="tab-sync" onclick="switchAdminTab('tab-sync')">🌐 跨端同步</button>
     </div>
 
     <!-- Tab 1: 文本管理 -->
@@ -1031,6 +1031,42 @@
           <button type="button" onclick="changeAdminPwd()" style="padding:10px 18px;background:var(--accent-gradient);color:#fff;border:none;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer">🔐 修改密码</button>
         </div>
         <div class="form-hint">修改后需要用新密码重新登录管理员后台</div>
+      </div>
+    </div>
+
+    <!-- Tab 4: 跨端同步 -->
+    <div class="tab-panel" id="tab-syncPanel">
+      <div class="form-group">
+        <label>① 当前后端连接状态</label>
+        <div id="syncStatusBar" style="padding:10px 14px;border-radius:8px;font-size:0.88rem"></div>
+      </div>
+
+      <div class="form-group">
+        <label>② 导出当前配置（生成 site-config.json）</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button type="button" onclick="exportSiteConfig()" style="padding:10px 18px;background:var(--accent-gradient);color:#fff;border:none;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer">📥 下载配置文件</button>
+          <button type="button" onclick="copySiteConfig()" style="padding:10px 18px;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:0.88rem;cursor:pointer">📋 复制到剪贴板</button>
+        </div>
+        <div class="form-hint">导出后把 <code>site-config.json</code> 上传到 GitHub 仓库根目录（可选：用 JSON 内容覆盖同名文件）。之后其他设备打开页面就会从 CDN 拉取你的设计。</div>
+      </div>
+
+      <div class="form-group">
+        <label>③ GitHub CDN 地址（jsDelivr）</label>
+        <input type="text" id="f_cdnRepo" placeholder="如：wanger/wanwu-careers 或 https://github.com/wanger/wanwu-careers" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem">
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button type="button" onclick="saveCdnRepo()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer">保存</button>
+          <button type="button" onclick="testCdnSync()" style="padding:8px 16px;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:0.85rem;cursor:pointer">测试拉取</button>
+        </div>
+        <div class="form-hint">填 GitHub 用户名/仓库名。填写后页面加载会从 jsDelivr CDN 拉 <code>site-config.json</code>，实现跨设备同步（适合 GitHub Pages 等纯静态托管）。</div>
+      </div>
+
+      <div class="form-group">
+        <label>④ 三种同步方式对比</label>
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.8;background:var(--bg);padding:12px;border-radius:8px;border:1px solid var(--border)">
+          <b>A. Flask 后端（推荐）：</b>所有配置存 SQLite，电脑/手机同域访问 → 自动实时同步。<br>
+          <b>B. GitHub CDN：</b>无后端时，每次编辑完点"下载配置文件"，push <code>site-config.json</code> 到 GitHub → 其他设备刷新从 CDN 拉取。<br>
+          <b>C. 纯 localStorage：</b>无后端无 CDN → 每台设备独立存储，互不同步。
+        </div>
       </div>
     </div>
 
@@ -1214,6 +1250,199 @@ const jobList = document.getElementById('jobList');
 const filterBar = document.getElementById('filterBar');
 const detailPanel = document.getElementById('detailPanel');
 
+/* ============ 后端配置同步 ============ */
+let _serverCfgAvailable = false;
+let _cdnCfgAvailable = false;
+const CDN_CFG_KEY = 'wanwu_cdn_sync_v1';  // 存管理员填的 GitHub 仓库（格式: user/repo）
+
+/** 尝试把字符串安全地 JSON.parse 一次；解析失败则原串返回。用于剥离后端值意外的双重 JSON 包裹。 */
+function safeUnpack(v) {
+  if (typeof v !== 'string') return v;
+  const s = v.trim();
+  // 只有明显是 JSON 格式的才尝试 parse
+  if ((s.startsWith('{') && s.endsWith('}')) || (s.startsWith('[') && s.endsWith(']')) || (s.startsWith('"') && s.endsWith('"'))) {
+    try {
+      return JSON.parse(s);
+    } catch {
+      return v;
+    }
+  }
+  return v;
+}
+async function fetchServerConfig() {
+  try {
+    const r = await fetch('/api/config', { cache: 'no-store' });
+    if (!r.ok) return;
+    const j = await r.json();
+    if (!j || !j.ok || !j.data) return;
+    const d = j.data;
+    let count = 0;
+    Object.keys(d).forEach(k => {
+      if (k === 'admin_pwd_hash') return;
+      if (d[k] !== undefined && d[k] !== null && d[k] !== '') {
+        let raw = d[k];
+        if (typeof raw === 'string') {
+          raw = raw.trim();
+          raw = safeUnpack(raw);
+        }
+        // 关键修复：safeUnpack 可能把 JSON 字符串解析成对象/数组
+        // 存回 localStorage 时，必须对象/数组用 JSON.stringify，否则 String(obj) = "[object Object]"
+        let stored;
+        if (raw && typeof raw === 'object') stored = JSON.stringify(raw);
+        else stored = String(raw);
+        localStorage.setItem(k, stored);
+        count++;
+      }
+    });
+    _serverCfgAvailable = true;
+    if (count > 0) console.log('[site] 从服务器拉取配置 ' + count + ' 项');
+  } catch (e) {
+    // 无后端或网络错误：降级为纯 localStorage
+    console.log('[site] 未连接到后端配置服务，使用本地存储');
+  }
+}
+/** 从 GitHub Pages 地址自动推导仓库：https://user.github.io/repo/... → user/repo */
+function deriveCdnRepoFromUrl(hostname, pathname) {
+  const host = (hostname || '').toLowerCase();
+  if (!host.endsWith('.github.io')) return '';
+  const owner = host.replace('.github.io', '');
+  const parts = (pathname || '').split('/').filter(Boolean);
+  if (parts.length > 0) return owner + '/' + parts[0];
+  return owner + '/' + host; // 主页仓库形如 user/user.github.io
+}
+/** GitHub Pages 静态部署降级方案：从 jsDelivr CDN 拉配置文件 */
+async function fetchCdnConfig() {
+  let repo = '';
+  try { repo = localStorage.getItem(CDN_CFG_KEY) || ''; } catch {}
+  // 访客浏览器没有手动设置时，自动从 github.io 网址推导
+  if (!repo) repo = deriveCdnRepoFromUrl(location.hostname, location.pathname);
+  if (!repo) return;
+  // 兼容用户可能填的各种格式
+  const cleanRepo = repo.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '');
+  const urls = [
+    `https://cdn.jsdelivr.net/gh/${cleanRepo}@main/site-config.json`,
+    `https://cdn.jsdelivr.net/gh/${cleanRepo}@master/site-config.json`
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url + '?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) continue;
+      const cfg = await r.json();
+      if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) continue;
+      let count = 0;
+      Object.keys(cfg).forEach(k => {
+        if (k === 'admin_pwd_hash') return;
+        if (cfg[k] !== undefined && cfg[k] !== null && cfg[k] !== '') {
+          let raw = cfg[k];
+          if (typeof raw === 'string') raw = safeUnpack(raw.trim());
+          // 关键修复：safeUnpack 可能把 JSON 字符串解析成对象/数组
+          // 存回 localStorage 时，必须对象/数组用 JSON.stringify，否则 String(obj) = "[object Object]"
+          let stored;
+          if (raw && typeof raw === 'object') stored = JSON.stringify(raw);
+          else stored = String(raw);
+          localStorage.setItem(k, stored);
+          count++;
+        }
+      });
+      _cdnCfgAvailable = true;
+      console.log('[site] 从 CDN (jsDelivr) 拉取配置 ' + count + ' 项');
+      return;
+    } catch { /* 下一个 URL */ }
+  }
+  console.log('[site] CDN 配置拉取失败（可忽略）');
+}
+async function saveToServer(key, value) {
+  if (!_serverCfgAvailable) return;
+  try {
+    const body = {};
+    // 关键修复：不再盲目 String(value)。保留原始类型，Flask 会存 str(v)
+    // 如果 value 已经是 JSON 字符串（调用方已 JSON.stringify），直接传
+    // 如果 value 是普通字符串，也直接传
+    body[key] = (value === null || value === undefined) ? null : value;
+    await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      credentials: 'same-origin'
+    });
+  } catch (e) { /* 静默失败 */ }
+}
+
+/* ============ 跨端同步辅助（Flask + GitHub CDN 双通道）============ */
+function collectSiteConfig() {
+  const cfg = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k) continue;
+    // 排除敏感信息：后端密码哈希、管理员登录密码
+    if (k === 'admin_pwd_hash' || k === PWD_STORAGE_KEY || k === CDN_CFG_KEY) continue;
+    if (k.startsWith('wanwu_') || k.startsWith(STORAGE_)) {
+      const v = localStorage.getItem(k);
+      if (v !== null && v !== undefined && v !== '') cfg[k] = v;
+    }
+  }
+  return cfg;
+}
+function exportSiteConfig() {
+  const cfg = collectSiteConfig();
+  // 用后端存的格式存：所有值都是字符串（和 Flask admin_cfg 表一致）
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'site-config.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ 已导出 site-config.json，请上传到 GitHub 仓库根目录');
+}
+function copySiteConfig() {
+  const cfg = collectSiteConfig();
+  const text = JSON.stringify(cfg, null, 2);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('✅ 配置已复制到剪贴板')).catch(() => {
+      prompt('复制下面的 JSON 内容', text);
+    });
+  } else {
+    prompt('复制下面的 JSON 内容', text);
+  }
+}
+function saveCdnRepo() {
+  const input = document.getElementById('f_cdnRepo');
+  const repo = (input?.value || '').trim();
+  if (!repo) { localStorage.removeItem(CDN_CFG_KEY); showToast('已清除 CDN 地址'); return; }
+  localStorage.setItem(CDN_CFG_KEY, repo);
+  showToast('✅ CDN 地址已保存，页面加载时自动从 jsDelivr 拉取');
+}
+async function testCdnSync() {
+  const repo = (document.getElementById('f_cdnRepo')?.value || '').trim();
+  if (!repo) { showToast('请先填写 GitHub 仓库地址', 'error'); return; }
+  localStorage.setItem(CDN_CFG_KEY, repo);
+  showToast('⏳ 正在从 CDN 拉取...');
+  await fetchCdnConfig();
+  if (_cdnCfgAvailable) {
+    showToast('✅ CDN 拉取成功，配置已灌入 localStorage');
+    updateSyncStatusBar();
+  } else {
+    showToast('❌ CDN 拉取失败（请确认 site-config.json 已推送到 main/master 分支）', 'error');
+  }
+}
+function updateSyncStatusBar() {
+  const bar = document.getElementById('syncStatusBar');
+  if (!bar) return;
+  if (_serverCfgAvailable) {
+    bar.innerHTML = '<span style="color:#16a34a">● Flask 后端已连接</span> — 所有保存自动存服务器，跨设备实时同步';
+    bar.style.background = 'rgba(34,197,94,0.1)';
+    bar.style.color = '#15803d';
+  } else if (_cdnCfgAvailable) {
+    bar.innerHTML = '<span style="color:#2563eb">● jsDelivr CDN 已连接</span> — 页面加载时从 GitHub 拉取配置（需手动 push site-config.json）';
+    bar.style.background = 'rgba(37,99,235,0.1)';
+    bar.style.color = '#1d4ed8';
+  } else {
+    bar.innerHTML = '<span style="color:#dc2626">● 未连接任何同步源</span> — 仅使用本地 localStorage，不同设备互不同步';
+    bar.style.background = 'rgba(239,68,68,0.08)';
+    bar.style.color = '#b91c1c';
+  }
+}
+
 /* ============ 存储函数 ============ */
 function loadAll() {
   try { jobs = JSON.parse(localStorage.getItem(STORAGE_JOBS)) || JSON.parse(JSON.stringify(DEFAULT_JOBS)); } catch { jobs = JSON.parse(JSON.stringify(DEFAULT_JOBS)); }
@@ -1250,10 +1479,10 @@ function loadAll() {
   updateFooterEmail();
   updateStatJobs();
 }
-function saveJobs() { localStorage.setItem(STORAGE_JOBS, JSON.stringify(jobs)); }
-function saveCats(c) { localStorage.setItem(STORAGE_CATS, JSON.stringify(c)); }
-function saveCities(c) { localStorage.setItem(STORAGE_CITIES, JSON.stringify(c)); }
-function saveEmail(e) { localStorage.setItem(STORAGE_EMAIL, e); }
+function saveJobs() { const v = JSON.stringify(jobs); localStorage.setItem(STORAGE_JOBS, v); saveToServer(STORAGE_JOBS, v); }
+function saveCats(c) { const v = JSON.stringify(c || categories); localStorage.setItem(STORAGE_CATS, v); saveToServer(STORAGE_CATS, v); }
+function saveCities(c) { const v = JSON.stringify(c || cities); localStorage.setItem(STORAGE_CITIES, v); saveToServer(STORAGE_CITIES, v); }
+function saveEmail(e) { const v = e; localStorage.setItem(STORAGE_EMAIL, v); saveToServer(STORAGE_EMAIL, v); }
 
 /* ============ 权限弹窗 ============ */
 function openPwdDialog() {
@@ -1274,10 +1503,22 @@ function doLogin() {
   showToast('✅ 已进入后台管理模式');
   location.hash = '';
   scrollTo({top:0,behavior:'smooth'});
+  // 同步登录后端 session（让 /api/config POST 有权限）
+  if (_serverCfgAvailable) {
+    fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd }),
+      credentials: 'same-origin'
+    }).catch(() => {});
+  }
 }
 function logout() {
   exitAdminMode();
   showToast('已退出后台');
+  if (_serverCfgAvailable) {
+    fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
+  }
 }
 
 /* ============ Overlay ============ */
@@ -1297,7 +1538,14 @@ function joinMulti(a) { return Array.isArray(a) ? a.join('；') : String(a || ''
 function getApplyEmail() { return applyEmail; }
 function sanitizeEmail(e) {
   if (!e) return DEFAULT_EMAIL;
-  const v = String(e).trim();
+  let v = String(e).trim();
+  // 安全解包：剥离可能的双重 JSON 引号（如 '"hr@x.com"' → 'hr@x.com'）
+  if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+    try { v = JSON.parse(v); } catch { v = v.slice(1, -1); }
+    v = String(v).trim();
+  }
+  // 过滤明显的脏字符，但保留 @ 和 . （邮箱合法字符）
+  v = v.replace(/[<>()\[\]{}|\\/`~#%^&*=+?;:\s]/g, '');
   if (/^[\w.+-]+@[\w-]+\.[\w.-]+$/.test(v)) return v;
   return DEFAULT_EMAIL;
 }
@@ -1530,6 +1778,10 @@ function openAdminDialog() {
   document.getElementById('f_heroTitleText').value = heroTitleText;
   document.getElementById('f_heroSloganText').value = heroSloganText;
   document.getElementById('f_aboutSubText').value = aboutSubText;
+  // CDN 仓库输入框回填
+  try { document.getElementById('f_cdnRepo').value = localStorage.getItem(CDN_CFG_KEY) || ''; } catch {}
+  // 同步状态栏刷新
+  updateSyncStatusBar();
   renderCatTags();
   renderCityTags();
   // Logo1
@@ -1563,6 +1815,9 @@ function saveAdmin() {
   localStorage.setItem('wanwu_hero_title_text', heroTitleText);
   localStorage.setItem('wanwu_hero_slogan_text', heroSloganText);
   localStorage.setItem('wanwu_about_sub_text', aboutSubText);
+  saveToServer('wanwu_hero_title_text', heroTitleText);
+  saveToServer('wanwu_hero_slogan_text', heroSloganText);
+  saveToServer('wanwu_about_sub_text', aboutSubText);
   applyTexts();
   // 颜色字段
   heroTitleColor = document.getElementById('f_heroTitleColor').value;
@@ -1571,6 +1826,9 @@ function saveAdmin() {
   localStorage.setItem('wanwu_hero_title_color', heroTitleColor);
   localStorage.setItem('wanwu_hero_slogan_color', heroSloganColor);
   localStorage.setItem('wanwu_hero_about_color', heroAboutColor);
+  saveToServer('wanwu_hero_title_color', heroTitleColor);
+  saveToServer('wanwu_hero_slogan_color', heroSloganColor);
+  saveToServer('wanwu_hero_about_color', heroAboutColor);
   applyHeroTitleColor(heroTitleColor);
   applyHeroSloganColor(heroSloganColor);
   applyAboutSubColor(heroAboutColor);
@@ -1589,7 +1847,7 @@ function saveAdmin() {
   closeOverlay('adminOverlay');
   showToast('✅ 设置已保存');
 }
-function saveAboutStorage(t) { localStorage.setItem(STORAGE_ABOUT, t); }
+function saveAboutStorage(t) { localStorage.setItem(STORAGE_ABOUT, t); saveToServer(STORAGE_ABOUT, t); }
 
 /* ============ UI 资源管理 ============ */
 function readFileAsDataURL(file) {
@@ -1765,7 +2023,11 @@ function computeDefaultLayout() {
 }
 
 function saveCards(silent) {
-  try { localStorage.setItem('wanwu_cards_v1', JSON.stringify(cards)); }
+  try {
+    const v = JSON.stringify(cards);
+    localStorage.setItem('wanwu_cards_v1', v);
+    saveToServer('wanwu_cards_v1', v);
+  }
   catch (e) { if (!silent) showToast('图片过多，超出本地存储上限，请减少素材', 'error'); }
 }
 
@@ -1840,7 +2102,9 @@ function stopGalleryTimer() {
 }
 function saveGallery() {
   try {
-    localStorage.setItem('wanwu_gallery_v1', JSON.stringify(gallery));
+    const v = JSON.stringify(gallery);
+    localStorage.setItem('wanwu_gallery_v1', v);
+    saveToServer('wanwu_gallery_v1', v);
   } catch (err) {
     showToast('图片过多，超出本地存储上限，请减少图片', 'error');
   }
@@ -2136,15 +2400,18 @@ function setGalleryTransition(mode) {
 
 /* 主标题卡片文字颜色 */
 function setHeroTextColor(kind, val) {
-  if (kind === 'title') { heroTitleColor = val; localStorage.setItem('wanwu_hero_title_color', val); applyHeroTitleColor(val); }
-  else if (kind === 'slogan') { heroSloganColor = val; localStorage.setItem('wanwu_hero_slogan_color', val); applyHeroSloganColor(val); }
-  else { heroAboutColor = val; localStorage.setItem('wanwu_hero_about_color', val); applyAboutSubColor(val); }
+  if (kind === 'title') { heroTitleColor = val; localStorage.setItem('wanwu_hero_title_color', val); saveToServer('wanwu_hero_title_color', val); applyHeroTitleColor(val); }
+  else if (kind === 'slogan') { heroSloganColor = val; localStorage.setItem('wanwu_hero_slogan_color', val); saveToServer('wanwu_hero_slogan_color', val); applyHeroSloganColor(val); }
+  else { heroAboutColor = val; localStorage.setItem('wanwu_hero_about_color', val); saveToServer('wanwu_hero_about_color', val); applyAboutSubColor(val); }
 }
 function clearHeroTextColors() {
   heroTitleColor = ''; heroSloganColor = ''; heroAboutColor = '';
   localStorage.removeItem('wanwu_hero_title_color');
   localStorage.removeItem('wanwu_hero_slogan_color');
   localStorage.removeItem('wanwu_hero_about_color');
+  saveToServer('wanwu_hero_title_color', null);
+  saveToServer('wanwu_hero_slogan_color', null);
+  saveToServer('wanwu_hero_about_color', null);
   applyHeroTitleColor('');
   applyHeroSloganColor('');
   applyAboutSubColor('');
@@ -2163,7 +2430,11 @@ function applyPageBg() {
   }
 }
 function savePageBg() {
-  try { localStorage.setItem('wanwu_page_bg_v1', JSON.stringify({ color: pageBgColor, img: pageBgImg })); } catch {}
+  try {
+    const v = JSON.stringify({ color: pageBgColor, img: pageBgImg });
+    localStorage.setItem('wanwu_page_bg_v1', v);
+    saveToServer('wanwu_page_bg_v1', v);
+  } catch {}
 }
 function pageBgUpload(input) {
   const f = input.files && input.files[0];
@@ -2324,15 +2595,6 @@ async function galleryFilesUpload(input) {
   const st = document.getElementById('galleryStatus');
   if (st) st.textContent = gallery.images.length + ' 张';
 }
-function resetCardLayout() {
-  if (!confirm('恢复三张卡片的默认位置、大小与背景设计？素材图也会清空。')) return;
-  cards = JSON.parse(JSON.stringify(CARD_DEFAULTS));
-  computeDefaultLayout();
-  applyGallery();
-  saveCards(true);
-  refreshCardPanels();
-  showToast('↺ 已恢复默认布局');
-}
 
 /* 给三张卡片注入拖动条与手柄 */
 function initCardChrome() {
@@ -2462,6 +2724,7 @@ function applyCustomHeroBg(imgData, bgColor, effect) {
 function selectTopBarEffect(effect) {
   topBarBgEffect = effect || '';
   localStorage.setItem('wanwu_topbar_effect_v1', topBarBgEffect);
+  saveToServer('wanwu_topbar_effect_v1', topBarBgEffect);
   applyTopBarBg(topBarBgData, topBarBgColor, topBarBgEffect);
   highlightEffect('#topbarEffectPresets', effect);
 }
@@ -2475,6 +2738,7 @@ function highlightEffect(sel, effect) {
 function removeTopBarBg() {
   topBarBgData = null;
   localStorage.removeItem('wanwu_topbar_bg_v1');
+  saveToServer('wanwu_topbar_bg_v1', null);
   applyTopBarBg(null, topBarBgColor, topBarBgEffect);
   const btn = document.getElementById('btnRemoveTopBarBg'); if (btn) btn.style.display = 'none';
   const st = document.getElementById('topBarBgStatus'); if (st) st.textContent = '已恢复默认';
@@ -2538,8 +2802,8 @@ function applyTexts() {
     aboutH2.style.color = heroAboutColor || '';
   }
 }
-function removeLogo1() { customLogo1Data = null; localStorage.removeItem('wanwu_logo1_v1'); applyLogo('brandLogo1', null, '万'); document.getElementById('btnRemoveLogo1').style.display = 'none'; document.getElementById('logo1Status').textContent = '已恢复默认'; document.getElementById('logo1Preview').innerHTML = ''; }
-function removeLogo2() { customLogo2Data = null; localStorage.removeItem('wanwu_logo2_v1'); applyLogo('brandLogo2', null, '敲'); document.getElementById('btnRemoveLogo2').style.display = 'none'; document.getElementById('logo2Status').textContent = '已恢复默认'; document.getElementById('logo2Preview').innerHTML = ''; }
+function removeLogo1() { customLogo1Data = null; localStorage.removeItem('wanwu_logo1_v1'); saveToServer('wanwu_logo1_v1', null); applyLogo('brandLogo1', null, '万'); document.getElementById('btnRemoveLogo1').style.display = 'none'; document.getElementById('logo1Status').textContent = '已恢复默认'; document.getElementById('logo1Preview').innerHTML = ''; }
+function removeLogo2() { customLogo2Data = null; localStorage.removeItem('wanwu_logo2_v1'); saveToServer('wanwu_logo2_v1', null); applyLogo('brandLogo2', null, '敲'); document.getElementById('btnRemoveLogo2').style.display = 'none'; document.getElementById('logo2Status').textContent = '已恢复默认'; document.getElementById('logo2Preview').innerHTML = ''; }
 
 function changeAdminPwd() {
   const oldPwd = document.getElementById('f_oldPwd').value;
@@ -2834,7 +3098,12 @@ function downloadBlob(data, name, mime) {
 }
 
 /* ============ 初始化 ============ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // 1. 尝试从后端 Flask 拉配置
+  await fetchServerConfig();
+  // 2. 如果后端不可用（GitHub Pages 静态部署），尝试从 jsDelivr CDN 拉
+  if (!_serverCfgAvailable) await fetchCdnConfig();
+
   const ys = document.getElementById('yearSpan');
   if (ys) ys.textContent = new Date().getFullYear();
 
@@ -2865,25 +3134,25 @@ document.addEventListener('DOMContentLoaded', () => {
   if (fLogo1) fLogo1.addEventListener('change', async () => {
     const file = fLogo1.files[0]; if (!file) return;
     if (file.size > 2 * 1024 * 1024) { showToast('Logo 不能超过 2MB', 'error'); return; }
-    try { const d = await readFileAsDataURL(file); customLogo1Data = d; localStorage.setItem('wanwu_logo1_v1', d); applyLogo('brandLogo1', d, '万'); document.getElementById('btnRemoveLogo1').style.display = ''; document.getElementById('logo1Status').textContent = '已更新'; document.getElementById('logo1Preview').innerHTML = '<img src="' + d + '" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'; } catch { showToast('Logo1 上传失败', 'error'); }
+    try { const d = await readFileAsDataURL(file); customLogo1Data = d; localStorage.setItem('wanwu_logo1_v1', d); saveToServer('wanwu_logo1_v1', d); applyLogo('brandLogo1', d, '万'); document.getElementById('btnRemoveLogo1').style.display = ''; document.getElementById('logo1Status').textContent = '已更新'; document.getElementById('logo1Preview').innerHTML = '<img src="' + d + '" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'; } catch { showToast('Logo1 上传失败', 'error'); }
   });
   /* Logo 2 上传 */
   const fLogo2 = document.getElementById('f_logo2');
   if (fLogo2) fLogo2.addEventListener('change', async () => {
     const file = fLogo2.files[0]; if (!file) return;
     if (file.size > 2 * 1024 * 1024) { showToast('Logo 不能超过 2MB', 'error'); return; }
-    try { const d = await readFileAsDataURL(file); customLogo2Data = d; localStorage.setItem('wanwu_logo2_v1', d); applyLogo('brandLogo2', d, '敲'); document.getElementById('btnRemoveLogo2').style.display = ''; document.getElementById('logo2Status').textContent = '已更新'; document.getElementById('logo2Preview').innerHTML = '<img src="' + d + '" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'; } catch { showToast('Logo2 上传失败', 'error'); }
+    try { const d = await readFileAsDataURL(file); customLogo2Data = d; localStorage.setItem('wanwu_logo2_v1', d); saveToServer('wanwu_logo2_v1', d); applyLogo('brandLogo2', d, '敲'); document.getElementById('btnRemoveLogo2').style.display = ''; document.getElementById('logo2Status').textContent = '已更新'; document.getElementById('logo2Preview').innerHTML = '<img src="' + d + '" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">'; } catch { showToast('Logo2 上传失败', 'error'); }
   });
   /* Top Bar（Logo 区域）背景上传 */
   const fTopBarBg = document.getElementById('f_topbarbg');
   if (fTopBarBg) fTopBarBg.addEventListener('change', async () => {
     const file = fTopBarBg.files[0]; if (!file) return;
     if (file.size > 3 * 1024 * 1024) { showToast('背景图不能超过 3MB', 'error'); return; }
-    try { const d = await readFileAsDataURL(file); topBarBgData = d; localStorage.setItem('wanwu_topbar_bg_v1', d); applyTopBarBg(d, topBarBgColor, topBarBgEffect); document.getElementById('btnRemoveTopBarBg').style.display = ''; document.getElementById('topBarBgStatus').textContent = '已更新'; document.getElementById('topBarBgPreview').innerHTML = '<img src="' + d + '" style="width:160px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">'; } catch { showToast('背景上传失败', 'error'); }
+    try { const d = await readFileAsDataURL(file); topBarBgData = d; localStorage.setItem('wanwu_topbar_bg_v1', d); saveToServer('wanwu_topbar_bg_v1', d); applyTopBarBg(d, topBarBgColor, topBarBgEffect); document.getElementById('btnRemoveTopBarBg').style.display = ''; document.getElementById('topBarBgStatus').textContent = '已更新'; document.getElementById('topBarBgPreview').innerHTML = '<img src="' + d + '" style="width:160px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">'; } catch { showToast('背景上传失败', 'error'); }
   });
   /* Logo 区域背景自定义颜色 */
   const fTbBg = document.getElementById('f_topbarBgColor');
-  if (fTbBg) fTbBg.addEventListener('input', () => { topBarBgColor = fTbBg.value; localStorage.setItem('wanwu_topbar_color_v1', topBarBgColor); applyTopBarBg(topBarBgData, topBarBgColor, topBarBgEffect); });
+  if (fTbBg) fTbBg.addEventListener('input', () => { topBarBgColor = fTbBg.value; localStorage.setItem('wanwu_topbar_color_v1', topBarBgColor); saveToServer('wanwu_topbar_color_v1', topBarBgColor); applyTopBarBg(topBarBgData, topBarBgColor, topBarBgEffect); });
   /* 网页背景上传与颜色 */
   const fPageBg = document.getElementById('f_pageBg');
   if (fPageBg) fPageBg.addEventListener('change', () => { pageBgUpload(fPageBg); fPageBg.value = ''; });
