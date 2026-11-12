@@ -604,6 +604,13 @@
     #pageCanvas #cardMain .card-scroll { height: auto !important; overflow: visible !important; }
     /* 轮播图片等比完整显示，留白处自然透出卡片背景 */
     #pageCanvas #cardGallery .hero-gallery-inner img { object-fit: contain; }
+    /* 轮播卡留白区磨砂质感：半透明白 + 背景模糊，隐约透出网页背景 */
+    #pageCanvas #cardGallery {
+      background: rgba(255, 255, 255, 0.22) !important;
+      backdrop-filter: blur(18px) saturate(1.3);
+      -webkit-backdrop-filter: blur(18px) saturate(1.3);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+    }
   }
   .page-card .card-fx {
     position: absolute; inset: 0; border-radius: inherit;
